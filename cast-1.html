@@ -1,0 +1,1118 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>Část 1 — Telefonie: co jsme rozhodli</title>
+<style>
+:root{
+  --paper:#EDF0F4; --card:#F8FAFC; --ink:#14181E; --ink-soft:#4E5866; --ink-faint:#78838F;
+  --rule:#C7D0DA; --rule-soft:#DEE4EB; --accent:#1F4B99; --accent-soft:#E2EAF7;
+  --done:#2C6B4E; --done-soft:#DDEDE4; --mark:#FBEFC6;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0F1319; --card:#161C25; --ink:#E6EBF1; --ink-soft:#9AA6B4; --ink-faint:#77828F;
+    --rule:#2B3542; --rule-soft:#212A35; --accent:#84A9E9; --accent-soft:#1A2740;
+    --done:#74C39A; --done-soft:#172B22; --mark:#4A3F1B;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1319; --card:#161C25; --ink:#E6EBF1; --ink-soft:#9AA6B4; --ink-faint:#77828F;
+  --rule:#2B3542; --rule-soft:#212A35; --accent:#84A9E9; --accent-soft:#1A2740;
+  --done:#74C39A; --done-soft:#172B22; --mark:#4A3F1B;
+}
+:root[data-theme="light"]{
+  --paper:#EDF0F4; --card:#F8FAFC; --ink:#14181E; --ink-soft:#4E5866; --ink-faint:#78838F;
+  --rule:#C7D0DA; --rule-soft:#DEE4EB; --accent:#1F4B99; --accent-soft:#E2EAF7;
+  --done:#2C6B4E; --done-soft:#DDEDE4; --mark:#FBEFC6;
+}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--serif);
+  font-size:17px;line-height:1.66;margin:0;-webkit-text-size-adjust:100%}
+.wrap{max-width:52rem;margin:0 auto;padding:0 1.25rem 8rem}
+
+/* ── topbar ─────────────────────────────── */
+.top{position:sticky;top:0;z-index:40;background:var(--paper);
+  border-bottom:1px solid var(--rule);font-family:var(--sans)}
+.top-in{max-width:52rem;margin:0 auto;padding:.6rem 1.25rem;display:flex;
+  align-items:center;gap:.9rem;flex-wrap:wrap}
+.crumb{font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-faint);font-weight:600}
+.crumb a{color:var(--ink-faint)}
+.prog{margin-left:auto;display:flex;align-items:center;gap:.6rem;font-size:.8rem;color:var(--ink-soft)}
+.bar{width:110px;height:5px;background:var(--rule-soft);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--done);transition:width .3s}
+.btn{font-family:var(--sans);font-size:.8rem;font-weight:600;padding:.42rem .8rem;
+  border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:2px;cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn-p{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-p:hover{opacity:.88;color:#fff}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── masthead ───────────────────────────── */
+header.mast{padding:3.2rem 0 1.6rem;border-bottom:2px solid var(--ink)}
+.kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 1rem}
+h1{font-size:clamp(2rem,5vw,2.9rem);line-height:1.12;margin:0 0 .8rem;
+  font-weight:600;text-wrap:balance;letter-spacing:-.015em}
+.stand{font-size:1.1rem;color:var(--ink-soft);margin:0;max-width:38rem}
+
+/* ── how-to ─────────────────────────────── */
+.howto{background:var(--card);border:1px solid var(--rule);padding:1.3rem 1.4rem;margin:2rem 0}
+.howto h2{font-size:.78rem;font-family:var(--sans);letter-spacing:.1em;text-transform:uppercase;
+  margin:0 0 .7rem;color:var(--accent)}
+.howto ol{margin:0;padding-left:1.2rem;font-size:.95rem;color:var(--ink-soft)}
+.howto li{margin:.35rem 0}
+.howto b{color:var(--ink)}
+
+/* ── sections ───────────────────────────── */
+section.grp{margin:3.4rem 0 0}
+.grp>h2{font-size:1.5rem;margin:0 0 .3rem;font-weight:600;letter-spacing:-.01em}
+.grp>.gsub{color:var(--ink-soft);font-size:.98rem;margin:0 0 1.6rem;max-width:40rem}
+.gtag{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-faint);display:block;margin-bottom:.5rem}
+
+/* ── clause ─────────────────────────────── */
+.clause{border-top:1px solid var(--rule);padding:1.8rem 0 1.9rem;display:grid;
+  grid-template-columns:5.4rem 1fr;gap:0 1.4rem;scroll-margin-top:4.5rem}
+.cnum{font-family:var(--mono);font-size:.74rem;color:var(--ink-faint);padding-top:.42rem;
+  letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.clause.answered .cnum{color:var(--done)}
+.clause h3{font-size:1.16rem;margin:0 0 .9rem;font-weight:600;line-height:1.32;text-wrap:balance}
+.field{margin:0 0 .85rem}
+.lab{font-family:var(--sans);font-size:.68rem;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-faint);display:block;margin-bottom:.15rem}
+.field p,.ask p{margin:0}
+.field+.field{margin-top:.85rem}
+.ask{margin:1.1rem 0 0;padding:.85rem 1rem;background:var(--accent-soft);border-left:2px solid var(--accent)}
+.ask .lab{color:var(--accent)}
+.ask p{font-size:.98rem}
+.num{font-variant-numeric:tabular-nums}
+.clause ul{margin:.3rem 0;padding-left:1.15rem}
+.clause li{margin:.2rem 0}
+
+/* ── terms ──────────────────────────────── */
+.tt{border-bottom:1px dotted var(--accent);color:inherit;cursor:pointer;
+  text-decoration:none;background:none;border-top:0;border-left:0;border-right:0;
+  padding:0;font:inherit}
+.tt sup{font-family:var(--sans);font-size:.62em;color:var(--accent);font-weight:700;
+  padding-left:.1em;vertical-align:super}
+.tt:hover{background:var(--accent-soft)}
+
+/* ── reply block ────────────────────────── */
+.replybox{margin-top:1.1rem;border:1px dashed var(--rule);background:var(--card);padding:.8rem .9rem}
+.replybox.has{border-style:solid;border-color:var(--done);background:var(--done-soft)}
+.rhead{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;font-family:var(--sans)}
+.rhead .lab{margin:0}
+.chip{font-family:var(--sans);font-size:.66rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;padding:.14rem .45rem;border:1px solid var(--rule);color:var(--ink-faint)}
+.chip.ok{border-color:var(--done);color:var(--done)}
+textarea{width:100%;font-family:var(--serif);font-size:.98rem;line-height:1.55;color:var(--ink);
+  background:transparent;border:0;resize:vertical;min-height:3.4rem;padding:0}
+textarea::placeholder{color:var(--ink-faint)}
+textarea:focus{outline:none}
+.notes{margin-top:.7rem;display:flex;flex-direction:column;gap:.6rem}
+.note{border-left:2px solid var(--accent);padding:.5rem .7rem;background:var(--card)}
+.note blockquote{margin:0 0 .35rem;font-size:.88rem;color:var(--ink-soft);font-style:italic}
+.note .del{float:right;font-family:var(--sans);font-size:.7rem;color:var(--ink-faint);
+  background:none;border:0;cursor:pointer;padding:0 0 0 .5rem}
+.note .del:hover{color:var(--accent)}
+mark.q{background:var(--mark);color:inherit;padding:0 .1em}
+
+/* ── floating select button ─────────────── */
+#selbtn{position:absolute;z-index:60;display:none;font-family:var(--sans);font-size:.76rem;
+  font-weight:700;background:var(--accent);color:#fff;border:0;padding:.4rem .7rem;
+  border-radius:2px;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.28)}
+
+/* ── term sheet ─────────────────────────── */
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:80;background:var(--card);
+  border-top:2px solid var(--accent);padding:1.2rem 1.25rem 1.5rem;transform:translateY(110%);
+  transition:transform .22s ease;box-shadow:0 -8px 30px rgba(0,0,0,.2)}
+#sheet.on{transform:translateY(0)}
+.sheet-in{max-width:52rem;margin:0 auto;position:relative}
+#sheet h4{margin:0 0 .3rem;font-size:1.1rem}
+#sheet p{margin:0;color:var(--ink-soft);font-size:.97rem;max-width:44rem}
+#sheet .x{position:absolute;top:-.3rem;right:0;background:none;border:0;font-size:1.3rem;
+  color:var(--ink-faint);cursor:pointer;line-height:1;font-family:var(--sans)}
+#sheet .k{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--accent);display:block;margin-bottom:.4rem}
+
+/* ── send ───────────────────────────────── */
+.send{margin:4rem 0 0;border:2px solid var(--ink);padding:1.6rem 1.5rem;background:var(--card)}
+.send h2{margin:0 0 .5rem;font-size:1.35rem}
+.send p{margin:0 0 1.1rem;color:var(--ink-soft);font-size:.97rem}
+.send .row{display:flex;gap:.6rem;flex-wrap:wrap}
+.miss{margin-top:1.1rem;font-size:.87rem;color:var(--ink-soft);font-family:var(--sans)}
+.miss a{color:var(--accent);font-family:var(--mono);font-size:.84em}
+
+/* ── glossary ───────────────────────────── */
+.gloss{margin:4rem 0 0;border-top:2px solid var(--ink);padding-top:1.6rem}
+.gloss h2{font-size:1.4rem;margin:0 0 1.2rem}
+.gloss dl{margin:0;display:grid;gap:.9rem}
+.gloss dt{font-family:var(--mono);font-size:.82rem;color:var(--accent);font-weight:600}
+.gloss dd{margin:.1rem 0 0;color:var(--ink-soft);font-size:.95rem}
+
+.nav{margin:3rem 0 0;display:flex;gap:.8rem;flex-wrap:wrap;font-family:var(--sans);font-size:.88rem}
+.nav a{color:var(--accent);text-decoration:none;border:1px solid var(--rule);padding:.5rem .8rem}
+.nav a:hover{border-color:var(--accent)}
+/* ── export modal ───────────────────────── */
+#modal{position:fixed;inset:0;z-index:100;background:rgba(10,14,20,.62);display:none;
+  align-items:center;justify-content:center;padding:1rem}
+#modal.on{display:flex}
+.mcard{background:var(--paper);border:2px solid var(--ink);max-width:44rem;width:100%;
+  max-height:88vh;display:flex;flex-direction:column;padding:1.3rem 1.4rem 1.4rem}
+.mcard h3{margin:0 0 .4rem;font-size:1.25rem}
+.mcard .lead{margin:0 0 .9rem;color:var(--ink-soft);font-size:.95rem}
+.mcard textarea.out{flex:1;min-height:12rem;background:var(--card);border:1px solid var(--rule);
+  font-family:var(--mono);font-size:.78rem;line-height:1.5;padding:.7rem .8rem;
+  white-space:pre;overflow:auto;resize:none}
+.mrow{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.9rem;align-items:center}
+.mrow a.btn{text-decoration:none;display:inline-block}
+.mnote{font-family:var(--sans);font-size:.8rem;color:var(--ink-faint);margin:.7rem 0 0}
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%) translateY(200%);
+  background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.85rem;
+  padding:.6rem 1rem;border-radius:2px;z-index:90;transition:transform .25s}
+.toast.on{transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:640px){
+  body{font-size:16px}
+  .clause{grid-template-columns:1fr;gap:.3rem}
+  .cnum{padding-top:0}
+}
+</style>
+
+
+</head>
+<body>
+<div class="top"><div class="top-in">
+  <span class="crumb">ČadcaNet · Část 1 z 2 · Telefonie</span>
+  <span class="prog"><span class="bar"><i id="pbar"></i></span><span id="ptxt">0 / 0</span></span>
+  <button class="btn btn-p" id="topsend">Odeslat</button>
+</div></div>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="kicker">K odsouhlasení · návrh k připomínkám</p>
+  <h1>Telefonie: karta klienta vyskočí dřív, než zvedneš sluchátko</h1>
+  <p class="stand">Tohle je kompletní seznam rozhodnutí, která jsme zatím udělali ohledně telefonie —
+  jak budou hovory chodit, co uvidí operátorka na obrazovce, co se nahrává a co se s tím děje dál.
+  Nic z toho ještě není postavené. Potřebujeme od tebe vědět, kde jsme se rozhodli špatně.</p>
+</header>
+
+<div class="howto">
+  <h2>Jak k tomu psát</h2>
+  <ol>
+    <li>Každé rozhodnutí má <b>číslo</b> (např. <span style="font-family:var(--mono)">TEL-04</span>) a dole <b>políčko na odpověď</b>. Piš normálně, česky, klidně jednou větou.</li>
+    <li>Chceš se vyjádřit ke <b>konkrétní větě</b>? Označ ji myší (nebo prstem) a klikni na tlačítko <b>Okomentovat</b>, které vyskočí. Poznámka se uloží i s citací, takže víme přesně, o čem mluvíš.</li>
+    <li>Slova s <b>tečkovaným podtržením</b> jsou odborné pojmy — klikni na ně a dole se vysvětlí.</li>
+    <li>Až budeš hotový (i částečně), klikni na <b>Odeslat</b> nahoře. Ukáže se hotový text, který zkopíruješ a pošleš Ladimu.</li>
+    <li>Odpovědi se průběžně <b>ukládají v prohlížeči</b>. Můžeš zavřít okno a vrátit se později — ale odešli to ze stejného počítače a stejného prohlížeče.</li>
+  </ol>
+</div>
+
+<section class="grp">
+  <span class="gtag">Oddíl A</span>
+  <h2>Jak budou hovory vůbec chodit</h2>
+  <p class="gsub">Pět rozhodnutí, která určují všechno ostatní. Kdyby se ukázalo, že jedno z nich
+  je špatně, přepisuje se celý zbytek dokumentu.</p>
+
+<article class="clause" id="TEL-01" data-q="Je pravda, že hovory bude brát jeden člověk u počítače? A kolik lidí to reálně je dnes?">
+  <div class="cnum">TEL-01</div><div class="cbody">
+  <h3>Hovory bere jeden člověk u počítače se sluchátky, ne na mobilu</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Příchozí hovory zvedá jedna osoba na pracovišti, přes
+  <a class="tt" data-t="softphone">softphone</a> — tedy program v počítači se sluchátky s mikrofonem.
+  Ne na mobilu, ne přepojováním mezi několika mobily. Česká strana takhle dneska už funguje přes
+  <a class="tt" data-t="fayn">FaYn</a>, takže to pro vás není nový zvyk, jen se to překlopí k nám.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Tohle jedno rozhodnutí odstranilo tři problémy najednou. Zaprvé cenu: když hovor doputuje
+  do ústředny a ta ho pak posílá dál na mobil, platí se <b>druhý hovor</b> — při vašem objemu to
+  vycházelo zhruba na <span class="num">200–700 €</span> měsíčně navíc. Přes počítač jde druhá
+  půlka hovoru po vlastní síti a nestojí nic. Zadruhé přehled: systém přesně ví, kdo hovor zvedl,
+  protože každý člověk má vlastní linku. Zatřetí volání ven — kliknutí na číslo v systému je
+  obyčejné vytočení, ne postup „nejdřív zavoláme vám, pak jemu".</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Kdo bere telefony, musí mít u sebe počítač a sluchátka. Když odejde od stolu, hovor nikdo
+  nezvedne a spadne do hlasové schránky nebo do seznamu zmeškaných (viz TEL-10, TEL-16).</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Sedí to? Kolik lidí dnes reálně zvedá telefony a mají u toho všichni počítač?
+  A stane se, že telefon musí někdo zvednout, když u stolu není?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-02" data-q="Souhlasíš s vlastní ústřednou u vás místo pronajaté služby, i za cenu, že ji musíme sami spravovat?">
+  <div class="cnum">TEL-02</div><div class="cbody">
+  <h3>Vlastní ústředna u vás v serverovně, ne pronajatá služba</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Postavíme vlastní <a class="tt" data-t="pbx">ústřednu</a> na programu
+  <a class="tt" data-t="asterisk">Asterisk</a>, běžící na serveru u vás. Vybírali jsme mezi tímhle,
+  pronajatou ústřednou (IPEX, Daktela) a americkými službami (Twilio, Telnyx).</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Dva důvody. Nahrávky hovorů zůstanou fyzicky u vás a máte nad nimi plnou kontrolu — u pronajaté
+  ústředny sedí u poskytovatele a vy jste v tom samém postavení jako dnes u FaYnu. A jediným provozním nákladem
+  je měsíční poplatek operátorovi za linku; ústředna samotná je zdarma a běží na obyčejném serveru.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Získáváme kontrolu a nízkou cenu, platíme za to údržbou: aktualizace, zálohy, a když ústředna
+  spadne, řešíme to my, ne dodavatel. Ústředna přitom <b>nikdy nebude přístupná z internetu</b> —
+  ven z ní volá jen malý pomocný program, který posílá informace o hovorech do systému.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Bereš, že údržba ústředny je nově naše práce? A máš v serverovně místo a napájení pro další
+  server, nebo to má běžet na něčem, co už tam stojí?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-03" data-q="Jsi OK s tím, že se zveřejní jedno nové pevné číslo s hlasovým menu a stará mobilní čísla se do něj jen přesměrují?">
+  <div class="cnum">TEL-03</div><div class="cbody">
+  <h3>Jedno nové pevné číslo s hlasovým menu; stará čísla se do něj přesměrují</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Zveřejní se <b>jedno nové pevné číslo</b> (Žilina 041 pro SK, 59x Ostrava pro ČR) a na něm poběží
+  <a class="tt" data-t="ivr">hlasové menu</a>: fakturace / podpora / obchod / hlášení výpadku.
+  Stávající mobilní čísla <span class="num">0919 43 43 35</span>, <span class="num">0919 43 43 25</span>
+  a <span class="num">0948 62 48 62</span> zůstávají v provozu a jen se do ústředny <b>přesměrují</b>.
+  Nic se nepřenáší k jinému operátorovi.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Přenést mobilní číslo na pevnou linku <b>zákon zakazuje</b> (§ 88 ods. 2 — mezi pevnou a mobilní
+  sítí se přenášet nedá). Kdybychom trvali na tom, že si necháme mobilní čísla, museli bychom kupovat
+  krabici na SIM karty zhruba za <span class="num">1 100 €</span> a domlouvat se s operátory. Nové pevné
+  číslo ten problém celý smaže. A menu není jen rozcestník — <b>volba, kterou člověk zmáčkne, je pro nás
+  informace</b>: ještě než operátorka zvedne, systém ví, že jde o fakturu nebo o výpadek, a napíše jí to
+  jako nadpis karty.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Nemusí se měnit polepy na autech ani vizitky — stará čísla fungují dál. Nové číslo se postupně
+  dostane do materiálů. Nevýhoda: hovor přes přesměrování jde přes vašeho mobilního operátora, takže
+  u těch starých čísel platíte přesměrování dál.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Vadí ti, že hlavní číslo bude pevná linka a ne mobil? A jsou ty čtyři volby v menu ty správné,
+  nebo tam něco chybí či přebývá?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-04" data-q="Schvaluješ objednání VIPTel S biznis (~2,50 €/měs bez DPH) + slovenské číslo Žilina 041, a k tomu české číslo za 5 € zřízení a 3 €/měs?">
+  <div class="cnum">TEL-04</div><div class="cbody">
+  <h3>Linku bere <a class="tt" data-t="viptel">VIPTel</a>, program S, zhruba 2,50 € měsíčně</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Připojení ústředny k telefonní síti obstará <a class="tt" data-t="siptrunk">SIP trunk</a> od VIPTelu.
+  Slovenská smlouva, program <b>VIPTel S biznis</b>: <span class="num">2,50 €</span> měsíčně bez DPH,
+  tři souběžné hovory, jedno geografické číslo Žilina (041). Samotné připojení je
+  <a class="tt" data-t="trunkfree">zdarma</a>. K tomu doporučujeme přikoupit <b>české číslo</b> —
+  <span class="num">5 €</span> jednorázově a <span class="num">3 €</span> měsíčně, oboje bez DPH.
+  Bez závazku, výpovědní lhůta jeden měsíc, první dva měsíce se slevou.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>VIPTel je jediný ověřený operátor, který nám vydá <b>čisté přihlašovací údaje</b>, takže si můžeme
+  provozovat vlastní ústřednu. Ostatní (SWAN, O2) vás pustí jen na svou platformu — což je přesně ta
+  past, ve které jste dneska u FaYnu. Ptali jsme se jich písemně na tři věci a odpověděli:
+  číslo volajícího posílají, hovory se skrytým číslem <b>neblokují</b>, a nabízejí
+  <a class="tt" data-t="did">česká i slovenská čísla</a> na jedné smlouvě.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Celková útrata za zkušební provoz bude pod <span class="num">11 €</span> za první měsíc. Když se ukáže, že to
+  nefunguje, do měsíce se to vypoví. Druhé (české) číslo tam navrhujeme hlavně proto, abychom si na
+  jedné smlouvě ověřili chování v obou zemích, aniž bychom se museli doptávat.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Můžu to objednat? Potřebuju od tebe telefonní kontakt — VIPTel si o něj výslovně řekl.
+  A dává smysl brát rovnou i české číslo, nebo českou stranu zatím necháme na FaYnu?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-05" data-q="Souhlasíš s tím, že novou ústřednu postavíme vedle FaYnu a přepneme až ve chvíli, kdy bude fungovat?">
+  <div class="cnum">TEL-05</div><div class="cbody">
+  <h3>Od FaYnu odejdeme postupně — nová ústředna poběží nejdřív vedle té staré</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Nová ústředna se postaví a rozjede <b>paralelně</b> s FaYnem. Nic se nepřenáší, nic se neruší.
+  Až bude nová strana prokazatelně fungovat, přepne se zveřejněné číslo a FaYn se pak vypoví.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Telefon je jediná cesta, kterou se k vám klient dovolá. „Velký třesk" o půlnoci, po kterém se
+  nikdo nedovolá, je riziko, které nemá cenu podstupovat, když se mu jde vyhnout jedním měsícem
+  souběhu za pár eur.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Po dobu přechodu platíte obě strany zároveň — FaYn i VIPTel. Při té ceně jde o jednotky eur měsíčně.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Jak dlouhá je výpovědní lhůta u FaYnu a je tam nějaký závazek? A co konkrétně na FaYnu
+  „dělá potíže" — abychom to samé neudělali znovu.</p></div>
+  </div>
+</article>
+</section>
+
+<section class="grp">
+  <span class="gtag">Oddíl B</span>
+  <h2>Co se stane, když někdo zavolá</h2>
+  <p class="gsub">Tohle je vlastní jádro věci — co uvidí člověk u telefonu na obrazovce
+  a co se z toho uloží.</p>
+
+<article class="clause" id="TEL-06" data-q="Je správně, že karta naskočí už při vyzvánění? A vadilo by, kdyby občas nenaskočila vůbec?">
+  <div class="cnum">TEL-06</div><div class="cbody">
+  <h3>Karta klienta naskočí už při vyzvánění, ne až po zvednutí</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Ve chvíli, kdy telefon začne zvonit, vyjede z pravé strany obrazovky panel s kartou volajícího.
+  Ne až po zvednutí. Za panelem zůstane rozdělaná práce vidět, jen ztmavená — nikam se neztratí.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Cílem je, aby operátorka věděla, kdo volá, <b>dřív než to zvedne</b> — jinak stráví prvních
+  patnáct vteřin hovoru hledáním. Prověřovali jsme, jak to dělají ostatní systémy, a našli jsme past:
+  většina hotových služeb umí ohlásit až zvednutí, ne vyzvánění. Vlastní ústředna nám dá i vyzvánění,
+  a je to jeden z důvodů, proč jsme šli touhle cestou.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Panel je <b>pomůcka, ne podmínka</b>. Když má operátorka zavřený prohlížeč nebo vypadne internet
+  do systému, telefon <b>zazvoní stejně</b> a hovor se stejně zapíše. Jen nevyskočí karta.
+  Nikdy se nestane, že by kvůli systému nebylo možné hovor přijmout.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Je to tak, jak si to představuješ? A co má být na kartě vidět jako první — jméno, dluh,
+  otevřené úkoly, poslední kontakt? Napiš pořadí, jak by ti dávalo smysl.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-07" data-q="Má být nadpis karty důvod volání (volba z menu), nebo jméno klienta?">
+  <div class="cnum">TEL-07</div><div class="cbody">
+  <h3>Nadpis karty je <b>důvod volání</b>, teprve pod ním jméno</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Největším písmem na kartě není jméno klienta, ale to, co si vybral v menu — „Hlášení výpadku",
+  „Fakturace". Jméno a ostatní údaje jsou hned pod tím.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Jméno se operátorka stejně dozví, jakmile pozdraví. Co potřebuje vědět <b>předem</b>, je to, v jakém
+  režimu má hovor vést. „Hlášení výpadku" a „Fakturace" jsou dva úplně jiné hovory a je lepší to
+  vědět před pozdravem než po něm.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Když volající menu přeskočí nebo se prokliká špatně, nadpis chybí a karta začne jménem.
+  Volba z menu se zároveň předvyplní do úkolu, takže se nemusí psát znovu.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Souhlasíš, nebo je jméno důležitější? Tohle je čistě věc zvyku lidí, kteří telefon berou —
+  klidně se zeptej jich.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-08" data-q="Souhlasíš, že se z každého hovoru automaticky NEZAKLÁDÁ úkol, ale jen se hovor zapíše?">
+  <div class="cnum">TEL-08</div><div class="cbody">
+  <h3>Zapíše se každý hovor, ale <a class="tt" data-t="ticket">úkol</a> vznikne jen když ho operátorka potvrdí</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Do systému se <b>vždycky</b> uloží řádek o hovoru (<a class="tt" data-t="cdr">kdo, kam, kdy,
+  jak dlouho, zvednuto/nezvednuto</a>). Úkol se ale založí jen tehdy, když operátorka během hovoru
+  klikne na „uložit" v předvyplněném formuláři. Jediná výjimka je hlasová schránka — tam operátorka
+  není, takže úkol vzniká sám (TEL-16).</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Ze starého systému jsme přenesli <span class="num">82 165</span> úkolů. Kdyby se úkol zakládal
+  z každého hovoru, přibylo by zhruba <span class="num">30 000</span> prázdných řádků ročně a
+  historie u klienta by se stala nečitelnou — přesně to, kvůli čemu ji chceme mít. Poznámka
+  rozepsaná během hovoru se přitom průběžně ukládá, takže když spadne prohlížeč, text se neztratí.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Hovory jsou k dohledání vždycky, i ty, ze kterých nic nebylo. Úkoly zůstanou jen ty skutečné.
+  Nevýhoda: když operátorka zapomene kliknout, úkol nevznikne, i když měl.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Sedí to? Nebo chceš mít stopu i z hovorů, ze kterých úkol nevznikl — a v jaké podobě?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-09" data-q="Když jedno číslo patří víc klientům, má systém ukázat seznam k výběru?">
+  <div class="cnum">TEL-09</div><div class="cbody">
+  <h3>Když jedno číslo sedí na víc klientů, ukáže se seznam — ne chyba</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Podle čísla hledáme klienta na čtyřech místech naráz: tři telefonní kolonky u klienta plus
+  kontaktní osoby. Výsledek je buď nikdo, jeden, nebo víc. Když je jich víc, karta ukáže <b>seznam</b>
+  a operátorka klikne na správného — nikdy hlášku „nejednoznačné".</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Ověřovali jsme to na vašich skutečných datech. Z <span class="num">1 992</span> aktivních klientů
+  má telefon <span class="num">1 991</span>, tedy <b>99,95 %</b>. Do mezinárodního tvaru se
+  automaticky převede <b>98,1 %</b> čísel; zbylých <span class="num">1,9 %</span> jsou překlepy,
+  které musí opravit člověk. A <span class="num">39</span> čísel patří dvěma až čtyřem klientům —
+  typicky rodina nebo firma. Důležitý nález: <span class="num">360</span> čísel je jen u kontaktní
+  osoby a v kolonkách klienta vůbec nejsou; kdybychom hledali jen tam, těch 360 lidí by systém nepoznal.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Vyhledávání funguje <b>od prvního dne</b>, není potřeba nejdřív čistit databázi. U těch
+  1,9 % špatných čísel karta prostě nenaskočí a operátorka hledá ručně jako dnes.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Když volá číslo, které patří dvěma klientům, podle čeho je operátorka pozná? Nabízíme adresu
+  a službu — stačí to, nebo je lepší něco jiného?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-10" data-q="Je pro tebe přijatelné, že hovory, které k nám vůbec nedorazí (spadlá linka), nikde nebudou — ani jako zmeškané?">
+  <div class="cnum">TEL-10</div><div class="cbody">
+  <h3>Pozor na rozdíl: „nikdo to nezvedl" a „hovor k nám vůbec nedošel"</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Jsou to dvě různé situace a schválně je nemícháme:</p>
+  <ul>
+    <li><b>Nikdo nezvedl.</b> Linka i ústředna fungují, telefon zazvonil, nikdo nezvedl.
+    Hovor se <b>zapíše</b> jako zmeškaný a objeví se v <b>seznamu zmeškaných</b> k zavolání zpět —
+    už s otevřenou kartou klienta.</li>
+    <li><b>Nedošel k nám.</b> Spadla linka od operátora, ústředna nebo internet. Hovor se k nám
+    nikdy nedostal, takže <b>o něm nemáme žádný záznam</b> a v seznamu zmeškaných nebude.</li>
+  </ul></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Nemůžeme zapsat něco, co jsme nikdy neviděli. Kdybychom tvrdili, že „všechny zmeškané hovory
+  jsou v seznamu", byla by to nepravda přesně ve chvíli, kdy na tom nejvíc záleží. Původně jsme
+  chtěli s operátorem domluvit tvrdé přesměrování při výpadku; to jsme zrušili, protože jsi řekl,
+  že <b>zmeškaný hovor je přijatelný, když je zapsaný</b> — klient zavolá znovu.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Když spadne ústředna, chová se to jako dnes, když nikdo nezvedá mobil. Proto stará mobilní
+  čísla necháváme živá — jsou to zároveň záložní cesta.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Je tohle přijatelné riziko? A pokud ne — stojí ti za to platit operátorovi za pojistku,
+  aby při výpadku hovory přehodil jinam?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-11" data-q="Chceš, aby se z čísla v systému dalo volat jedním kliknutím?">
+  <div class="cnum">TEL-11</div><div class="cbody">
+  <h3>Kliknutí na číslo v systému rovnou volá</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Kdekoliv je v systému telefonní číslo, dá se na něj kliknout: operátorce zazvoní sluchátka
+  a jakmile je operátorka zvedne, ústředna vytočí klienta. Hovor ven se zapíše stejně jako příchozí
+  a přiřadí se ke klientovi, ze kterého se volalo.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Odpadá přepisování čísel a s ním překlepy. A hlavně — hovory <b>ven</b> jsou pak v historii
+  klienta stejně jako příchozí, takže „kdy jsme s ním naposledy mluvili" je konečně pravdivý údaj.
+  Ochrana proti dvojímu vytočení je zabudovaná: když se klikne dvakrát, druhý hovor se nezaloží.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Hovory ven jsou <b>jediná věc, která se platí za minutu</b>. U programu S je to
+  <span class="num">0,05 €</span> za minutu na pevnou a <span class="num">0,095 €</span> na mobil.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Volá se od vás ven hodně? Jestli ano, řekni zhruba kolik minut měsíčně — může se vyplatit
+  vyšší program s levnější minutou.</p></div>
+  </div>
+</article>
+</section>
+
+<section class="grp">
+  <span class="gtag">Oddíl C</span>
+  <h2>Nahrávání a přepis hovorů</h2>
+  <p class="gsub">Nejcitlivější část celého návrhu — technicky i právně. Tady je největší šance,
+  že jsme něco pochopili jinak, než jsi to myslel.</p>
+
+<article class="clause" id="TEL-12" data-q="Souhlasíš s nahráváním hovorů ve stereu (každá strana zvlášť)? Rozhodnout se to musí předem, zpětně to nejde.">
+  <div class="cnum">TEL-12</div><div class="cbody">
+  <h3>Nahrává se ve stereu — každá strana hovoru do vlastní stopy</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Ústředna nahraje hovor tak, že klient je v levém kanálu a operátorka v pravém
+  (funkce <a class="tt" data-t="mixmonitor">MixMonitor</a>). Ne jako jednu smíchanou stopu.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Když jsou obě strany zvlášť, přepis <b>automaticky ví, kdo co řekl</b>. Kdyby se nahrálo
+  smíchaně, museli bychom hlasy rozplétat programem — a pro slovenštinu a češtinu to funguje mizerně.
+  Klíčové je, že <b>tohle se nedá dodělat zpětně</b>: ze smíchané nahrávky už dvě stopy nikdo neudělá.
+  Proto je to rozhodnutí, které musí padnout hned na začátku, i když se přepis rozjede později.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Nahrávka je zhruba dvakrát větší. Při vašem objemu to nehraje roli.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Bereme? Teď je to zadarmo a potom už nedostupné — pokud si nejsi jistý, jestli nahrávat vůbec,
+  je pořád levnější nahrávat rovnou ve stereu.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-13" data-q="Potvrzuješ, že nahrávky smí odejít z firmy na náš server v EU kvůli přepisu? Dražší alternativou je server u vás.">
+  <div class="cnum">TEL-13</div><div class="cbody">
+  <h3>Přepis poběží na našem serveru v EU — nahrávka tedy opustí budovu</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Nahrávka se po hovoru zašifruje, pošle na <b>náš server v Evropské unii</b> a tam ji na text
+  přepíše program <a class="tt" data-t="whisper">Whisper</a>. Není to Google ani žádná americká
+  služba. Server je náš a platí se jen za dobu, kdy skutečně počítá.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Americké služby jsme vyřadili kvůli <a class="tt" data-t="gdpr">GDPR</a>. A ověřovali jsme
+  i to, jestli by přepis nemohl běžet přímo u vás: šlo by to, ale potřebuje to grafickou kartu
+  za desítky tisíc, která by devadesát procent času nedělala nic. Cloudová varianta stojí zhruba
+  <span class="num">1 000 $</span> ročně při <span class="num">1 500</span> hodinách zvuku.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p><b>Toto je věc, kterou musíš vědomě schválit.</b> Hlas klienta je osobní údaj a tím, že opustí
+  budovu, přibude vám do interní evidence zpracování osobních údajů
+  (<a class="tt" data-t="ropa">ROPA</a>) další místo. Není to nic dramatického, ale je to papír,
+  který musí existovat.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Souhlasíš, aby nahrávky odcházely na náš EU server? Nebo trváš na tom, že zvuk nesmí opustit
+  vaši serverovnu — pak to jde, ale zaplatí se to hardwarem.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-14" data-q="Je pro tebe přepis s chybovostí 25–45 % užitečný, nebo je to pod hranicí použitelnosti?">
+  <div class="cnum">TEL-14</div><div class="cbody">
+  <h3>Přepis bude nepřesný — počítej se čtvrtinou až polovinou špatných slov</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Přepis nebude doslovný záznam. U slovenštiny přes telefon se dá čekat
+  <a class="tt" data-t="wer">chybovost</a> <b>25 až 45 %</b>. Konkrétní program vybereme až měřením
+  na <span class="num">30–50</span> vašich skutečných hovorů, a hodnotit se bude podle toho,
+  jestli sedí <b>jména, adresy a čísla</b> — ne podle celkové gramatiky.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Slovenština má na trénování méně než <span class="num">100</span> hodin veřejných nahrávek —
+  proti angličtině je to nic. Naměřené výsledky navíc silně závisí na tom, na čem se měří: stejný
+  program dostal na jedné sadě 9,2 % chyb a na druhé 20,8 %. Proto nevěříme číslům z internetu
+  a změříme si to na vašich hovorech.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Přepis je dobrý na <b>vyhledávání</b> („kdy volal ohledně routeru") a na rychlé přečtení,
+  o čem hovor byl. Není to důkaz a nedá se podle něj citovat. Ještě horší past než chybovost jsou
+  <b>výmysly</b>: tyhle programy při tichu nebo hudbě během čekání generují plynulé věty, které nikdo
+  neřekl. Proto povinně zapneme detekci ticha, práh spolehlivosti a v systému bude přepis vždycky
+  viditelně označený jako <b>strojový</b>.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Je takový přepis k něčemu dobrý, nebo je to podle tebe zbytečnost? Řekni to na rovinu —
+  je to samostatná etapa a dá se vynechat, aniž by to cokoliv jiného zdrželo.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-15" data-q="Potvrzuješ postup: hláška na začátku + aktivní souhlas volajícího + možnost mluvit bez nahrávání? A maximální dobu 6 měsíců?">
+  <div class="cnum">TEL-15</div><div class="cbody">
+  <h3>Právně: hláška nestačí — potřebujeme souhlas a cestu „bez nahrávání"</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Tři věci dohromady: <b>(1)</b> hláška na začátku hovoru, která výslovně říká, že se
+  nahrává <b>i přepisuje</b>; <b>(2)</b> aktivní potvrzení volajícího (např. stisk tlačítka),
+  které se zaznamená k danému hovoru; <b>(3)</b> funkční možnost mluvit s člověkem
+  <b>bez nahrávání</b>. Nahrávky se drží maximálně <b>6 měsíců</b>, ve výchozím nastavení
+  <b>90 dní</b>, pak se skutečně mažou.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Prověřovali jsme to a překvapilo nás to: na Slovensku nestačí GDPR samo o sobě. Občanský zákoník
+  (§ 12) k tomu <b>samostatně</b> vyžaduje svolení k pořízení zvukového záznamu fyzické osoby.
+  To znamená, že „tento hovor může být nahráván" jako jednosměrná hláška <b>nestačí</b> —
+  potřebujeme od volajícího aktivní úkon a musí existovat cesta ven.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Hovor se prodlouží o pár vteřin. Když volající souhlas nedá, hovor proběhne normálně, jen se
+  nenahraje a nepřepíše — a systém ho nesmí ani omylem poslat na přepis. Když někdo požádá o výmaz,
+  smaže se nahrávka i přepis.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Souhlasíš s tímhle postupem? A chceš držet nahrávky celých 6 měsíců, nebo stačí kratší doba?
+  Kratší je z hlediska ochrany údajů vždycky lepší.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-16" data-q="POZOR: nahrávání kvůli kontrole techniků jsme vyřadili jako samostatný právní režim. Trváš na něm?">
+  <div class="cnum">TEL-16</div><div class="cbody">
+  <h3 style="color:var(--accent)">Kontrola zaměstnanců přes nahrávky — vyřadili jsme ji, a ty jsi ji chtěl</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Nahrávání s cílem <b>kontrolovat vlastní lidi</b> jsme z tohoto projektu vyřadili.
+  Nahrávky slouží jako záznam o jednání s klientem — ne jako podklad pro hodnocení techniků.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Sledování zaměstnanců spadá na Slovensku pod <b>Zákonník práce § 13 ods. 4</b> a je to
+  <b>přísnější a úplně jiný režim</b> než nahrávání hovoru s klientem: musí být vážný důvod
+  vyplývající z povahy práce, zaměstnancům se to musí předem oznámit, je povinnost <b>projednat
+  to se zástupci zaměstnanců</b>, a prakticky vždy se k tomu dělá posouzení vlivu na ochranu údajů.
+  To není odstavec navíc — to je vlastní proces s vlastními riziky.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p><b>Tady je ale ten problém.</b> Když jsme o telefonii mluvili, řekl jsi, že nahrávání chceš
+  <b>hlavně kvůli tomu, abys viděl, jak technici mluví s klienty</b>. Právní rešerše nám ale
+  ukázala, že přesně tohle je ten přísnější režim. Takže jsme to vyřadili — a je možné, že jsme
+  tím vyřadili to, kvůli čemu jsi nahrávání chtěl.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p><b>Tohle je nejdůležitější otázka celého oddílu.</b> Trváš na kontrole lidí přes nahrávky?
+  Pokud ano, není to nemožné — jen to znamená oznámení zaměstnancům, projednání a posouzení navíc,
+  což vyžaduje právníka. Pokud ne, potvrď, že nahrávky jsou jen záznam pro klienta, a jedeme dál.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-17" data-q="Souhlasíš, že přepis se drží déle než nahrávka? Zvuk se po 6 měsících smaže, text zůstane.">
+  <div class="cnum">TEL-17</div><div class="cbody">
+  <h3>Zvuk se smaže dřív než text — a je to schválně</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Nahrávka se po uplynutí lhůty <b>opravdu smaže</b> z úložiště a v systému po ní zůstane
+  poznámka „nahrávka smazána (uplynula lhůta)". <b>Přepis zůstává</b> — je to normální servisní
+  záznam o tom, co se s klientem probíralo. Zmizí jen na výslovnou žádost o výmaz nebo se
+  smazáním celého klienta.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Zvuk je surový osobní údaj — je v něm hlas, tón, všechno. Text je servisní poznámka podobná té,
+  kterou by operátorka napsala ručně. Nemají důvod žít stejně dlouho.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Systém nikdy neukáže prázdno, které vypadá jako „nic tu nebylo". Vždycky napíše, co se stalo:
+  „nahrávka smazána, přepis zachován", nebo „přepis vymazán na žádost".</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Dává to smysl? Nebo chceš, aby se s nahrávkou mazal i text?</p></div>
+  </div>
+</article>
+</section>
+
+<section class="grp">
+  <span class="gtag">Oddíl D</span>
+  <h2>Mimo pracovní dobu, výpadky a co se zatím nestaví</h2>
+  <p class="gsub">Poslední oddíl: co se děje večer a o víkendu, jak se propojí telefon
+  s poruchami na síti, a co jsme vědomě odložili.</p>
+
+<article class="clause" id="TEL-18" data-q="Souhlasíš, že hlasová schránka s přepisem nahradí dnešní SMS bránu a číslo 0911 31 21 00 se zruší?">
+  <div class="cnum">TEL-18</div><div class="cbody">
+  <h3>Hlasová schránka nahradí SMS bránu — a to číslo se dá zrušit</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Mimo pracovní dobu (a během ní po zhruba <span class="num">20–25</span> vteřinách zvonění)
+  se hovor přepne do hlasové schránky. Zpráva se nahraje, přepíše na text a <b>automaticky se
+  z ní založí úkol</b> přiřazený ke klientovi podle čísla. Tím pádem se dá zrušit dnešní
+  SMS brána na čísle <span class="num">0911 31 21 00</span>.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>SMS brána existuje jen proto, že slovenští ani čeští mobilní operátoři neumí příchozí SMS
+  posílat dál — a služby, které to obcházejí, na Slovensku prakticky nefungují. Hlasová schránka
+  s přepisem řeší <b>stejnou potřebu</b> („mimo pracovní dobu chci nechat vzkaz") a nepotřebuje k tomu
+  druhé číslo. Ráno se vzkaz nečte v telefonu, ale objeví se jako úkol v systému.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Tohle je jediná výjimka z pravidla „úkol jen když ho operátorka potvrdí" — mimo dobu tam
+  žádná operátorka není. Hláška ve schránce zároveň plní roli oznámení o nahrávání; kdo nechce
+  být nahrán, prostě zprávu nenechá a zavolá ráno.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Jak dnes vlastně SMS brána funguje a chodí přes ni něco důležitého? A jsi OK s tím,
+  že se to číslo zruší — nebo je někde vytištěné a musí zůstat?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-19" data-q="Je pracovní doba 08:00–16:00 Po–Pá správně? A má být o svátcích provoz stejný jako mimo pracovní dobu?">
+  <div class="cnum">TEL-19</div><div class="cbody">
+  <h3>Pracovní doba: 08:00–16:00, pondělí až pátek, svátky mimo</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Podpora je v provozu <b>od 08:00 do 16:00</b> (16:00 už je mimo), pondělí až pátek.
+  <b>O státních svátcích je provoz stejný jako mimo pracovní dobu</b> a řeší se přes seznam svátků, který se dá
+  upravovat — ne napevno v programu. Čas se počítá podle Bratislavy, včetně střídání letního a zimního času.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Tuhle dobu jsme vzali z vašich zveřejněných kontaktů. Je to důležitější, než to vypadá:
+  podle stejného pravidla se rozhoduje ústředna i systém, takže když se to rozejde, volající
+  v 15:59 a v 16:01 dopadne jinak, než čeká.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Jeden seznam svátků se udržuje pro SK a jeden pro ČR — svátky se neshodují.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Sedí ta doba? Reálně, ne podle webu. A co soboty — bere někdo telefon o víkendu při větší
+  poruše?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-20" data-q="Souhlasíš, že volba „hlásím výpadek“ založí přednostní úkol do dispečinku a spáruje se se známou poruchou na síti?">
+  <div class="cnum">TEL-20</div><div class="cbody">
+  <h3>Volba „hlásím výpadek" jde rovnou do dispečinku a spáruje se s poruchou na síti</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Když si volající v menu vybere výpadek, úkol z toho hovoru dostane typ <b>„Výpadek"</b>,
+  <b>vyšší prioritu</b> a přiřadí se k <a class="tt" data-t="pop">bodu sítě</a>, pod který klient
+  patří. Zůstane otevřený a bez technika — a tím je ve frontě <a class="tt" data-t="dispecink">dispečinku</a>.
+  Navíc: pokud monitoring o poruše na tom bodě sítě <b>už ví</b>, hovor se k ní připojí a dispečer
+  vidí „známá porucha na bodě X — volalo už 6 lidí".</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Tohle je místo, kde se telefonie a monitoring potkávají, a je to hlavní důvod, proč se
+  vyplatí stavět obojí. Bez propojení se šest hovorů o jednom výpadku promění v šest samostatných
+  úkolů a někdo je musí ručně slučovat. S propojením je to jedna porucha se šesti volajícími,
+  kterým se dá po opravě dát vědět najednou.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Funguje to jen tak dobře, jak dobře jsou klienti přiřazení k zařízením a bodům sítě.
+  Naměřili jsme, že u <b>88 %</b> klientů se to podaří dohledat; u zbylých se úkol založí,
+  jen se nespáruje. Detaily jsou v části 2 (NET-24).</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Kdo má výpadky reálně rozdělovat technikům — je to jeden konkrétní člověk, nebo si
+  z fronty berou práci technici sami?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-21" data-q="Souhlasíš s odložením přesměrování hovorů z mobilů techniků na pozdější fázi?">
+  <div class="cnum">TEL-21</div><div class="cbody">
+  <h3>Když klient volá přímo technikovi — odloženo na později</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Chtěl jsi, aby hovor na mobil technika po několika zazvoněních spadl do ústředny, aby
+  se neztratil. Umíme to a víme, jak: na SIM kartě technika se nastaví bezplatné přesměrování při
+  nezvednutí (kód <span class="num">**61*číslo#</span>) na naše číslo, odkud to jde do hlasové
+  schránky a z ní do úkolu. <b>Ale odkládáme to</b> — nebude to v první verzi.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Není to potřeba k tomu, aby zbytek fungoval, a přidává to práci na každé jednotlivé SIM.
+  Až bude hlasová schránka fungovat, bude to doplněk na jedno odpoledne.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Do té doby platí to, co dnes: co si technik vyřídí na svůj mobil, v systému není.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Je to opravdu odložitelné, nebo je „klienti volají technikům napřímo a nikdo o tom neví"
+  problém, který tě pálí <b>hned</b>? Pokud ano, posuneme to dopředu.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="TEL-22" data-q="Souhlasíš se seznamem věcí, které se teď NEstaví?">
+  <div class="cnum">TEL-22</div><div class="cbody">
+  <h3>Co se vědomě <b>nestaví</b></h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Tři věci jsme z první verze schválně vynechali:</p>
+  <ul>
+    <li><b>Umělá inteligence, která by hovory sama odbavovala</b> nebo psala odpovědi z textu
+    hovoru. Až bude z čeho — tedy až budou hovory a přepisy v systému.</li>
+    <li><b>Automatická SMS klientovi po opravě výpadku</b> („už vám to jede"). Řeší se
+    samostatně, protože špatně odeslaná zpráva „opraveno" tam, kde opraveno není, je horší
+    než žádná zpráva. Souvisí s částí 2.</li>
+    <li><b>Tvrdé přesměrování od operátora při výpadku</b> — zrušeno, viz TEL-10.</li>
+  </ul></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Každá z těch věcí potřebuje, aby nejdřív fungovalo to pod ní. A první verze, která umí
+  málo věcí pořádně, je lepší než verze, která umí všechno napůl.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Chybí ti v tom seznamu něco, co jsi čekal, že tam bude? Nebo naopak — je něco z toho,
+  co bys chtěl mít hned?</p></div>
+  </div>
+</article>
+</section>
+
+
+
+<div class="send">
+  <h2>Odeslat zpětnou vazbu</h2>
+  <p>Sestaví se textový přehled všech tvých odpovědí i poznámek, přiřazený k číslům
+  rozhodnutí. Text se ukáže na obrazovce a zkopíruje do schránky — pošli ho Ladimu, jak ti
+  to vyhovuje: e-mailem na <b>ladi@amentistudio.com</b>, přes WhatsApp, jakkoliv.</p>
+  <div class="row">
+    <button class="btn btn-p" id="send2">Připravit zpětnou vazbu k odeslání</button>
+    <button class="btn" id="copy2">Jen zkopírovat</button>
+    <button class="btn" id="dl2">Zobrazit text</button>
+  </div>
+  <div class="miss" id="misslist"></div>
+</div>
+
+<section class="gloss" id="slovnicek">
+  <h2>Slovníček pojmů</h2>
+  <dl id="glossdl"></dl>
+</section>
+
+<nav class="nav" id="navlinks">
+  <a href="#" data-nav="hub">← Rozcestník</a>
+  <a href="#" data-nav="part2">Část 2 — Monitoring sítě →</a>
+</nav>
+
+</div>
+
+<button id="selbtn">Okomentovat</button>
+<div id="sheet"><div class="sheet-in">
+  <button class="x" id="sheetx" aria-label="Zavřít">✕</button>
+  <span class="k" id="sheetk"></span>
+  <h4 id="sheeth"></h4>
+  <p id="sheetp"></p>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const PART_ID   = "TEL";
+const PART_NAME = "Část 1 — Telefonie";
+const MAILTO    = "ladi@amentistudio.com";
+const LINKS     = { hub:"index.html", part2:"cast-2.html" };
+
+const TERMS = {
+  pbx:["PBX / ústředna","Krabice (nebo program na serveru), která rozděluje hovory uvnitř firmy. Přijme hovor zvenku a rozhodne, kde má zazvonit."],
+  asterisk:["Asterisk","Nejrozšířenější open-source telefonní ústředna. Zdarma, běží na obyčejném serveru, dá se do ní naprogramovat cokoliv."],
+  sip:["SIP","Protokol, kterým spolu telefony a ústředny domlouvají hovor přes internet. Náhrada za klasickou telefonní linku."],
+  siptrunk:["SIP trunk","Připojení naší ústředny k operátorovi přes internet místo drátu. Přes jeden trunk jde víc hovorů najednou."],
+  softphone:["Softphone","Telefon jako program v počítači. Volá se přes sluchátka s mikrofonem, číslo se vytáčí myší nebo klávesnicí."],
+  ari:["ARI","Rozhraní Asterisku, přes které mu jiný program může říkat, co má dělat, a dostávat zprávy o tom, co se právě děje s hovorem."],
+  wss:["WSS","Šifrované trvalé spojení mezi dvěma programy. Drží se otevřené, takže zprávy chodí okamžitě — na rozdíl od běžného načítání stránky."],
+  cli:["CLI / caller ID","Číslo volajícího. To, co se ukáže na displeji, když někdo volá. Celá vyskakovací karta stojí a padá na tom, že nám ho operátor doručí."],
+  clir:["CLIR / skryté číslo","Volající si u operátora zapnul skrývání čísla. Přijde nám hovor bez čísla — je to legální a musíme s tím počítat."],
+  ivr:["IVR / hlasové menu","„Pro fakturaci stiskněte jedničku.“ Nahraný hlas s výběrem, který volajícího nasměruje a nám zároveň řekne, proč volá."],
+  did:["DID","Přímé číslo, které z venku vede rovnou na konkrétní místo v ústředně, aniž by to někdo přepojoval."],
+  cdr:["CDR / záznam hovoru","Řádek v databázi o každém hovoru: kdo, kam, kdy, jak dlouho, jestli to někdo zvedl. Není to nahrávka, jen fakta."],
+  e164:["E.164","Mezinárodní tvar telefonního čísla, např. +421905123456. Jedno číslo se dá napsat deseti způsoby, tohle je ten jediný, podle kterého se dá spolehlivě porovnávat."],
+  stt:["STT / přepis řeči","Automatický převod nahrávky na text."],
+  whisper:["Whisper","Program od OpenAI, který přepisuje řeč na text. Dá se provozovat na vlastním serveru, takže nahrávky neopouštějí naši kontrolu."],
+  wer:["WER / chybovost","Kolik procent slov přepis splete. 30 % znamená, že každé třetí slovo je špatně — text se pořád dá číst a hledat v něm, ale není to doslovný záznam."],
+  vad:["VAD","Detekce, jestli je na nahrávce vůbec řeč. Bez ní si přepisovač nad tichem vymýšlí smysluplně znějící věty, které nikdo neřekl."],
+  gdpr:["GDPR","Evropské nařízení o ochraně osobních údajů. Nahrávka hlasu klienta je osobní údaj."],
+  ropa:["ROPA / záznamy o činnostech","Povinný interní seznam toho, jaké osobní údaje zpracováváme, kde a proč. Když nahrávky odejdou na cizí server, musí to tam být zapsané."],
+  pop:["POP / bod sítě","Místo, kde máme techniku — vysílač, stožár, rozvaděč. Od něj vedou linky ke klientům."],
+  trunkfree:["Trunk zdarma","VIPTel neúčtuje samotné připojení, platí se jen měsíční hlasový program. Zřízení nic nestojí."],
+  fayn:["FaYn","Brněnská firma, která vám dnes provozuje virtuální ústřednu pro českou stranu. Podle tebe „dělá potíže“."],
+  viptel:["VIPTel","Slovensko-český operátor. Jako jediný ověřený nám dá čisté přihlašovací údaje k SIP trunku, takže si můžeme provozovat vlastní ústřednu."],
+  ispadmin:["ISPadmin","Současný systém, ze kterého migrujeme. Telefonii neumí vůbec — žádné hovory v něm nejsou."],
+  ticket:["Ticket / úkol","Záznam o tom, že se něco má vyřešit — porucha, dotaz, montáž. Má stav, přiřazeného člověka a historii."],
+  mixmonitor:["MixMonitor","Funkce Asterisku, která hovor nahrává. Umí uložit každou stranu do vlastního kanálu."],
+  dispecink:["Dispečink","Fronta neuzavřených úkolů, ze které se práce rozděluje technikům."],
+
+  ping:["Ping / ICMP","Nejjednodušší test: pošle se malý paket a čeká se, jestli se vrátí. Zjistí, jestli zařízení odpovídá a jak rychle. Neřekne nic o tom, jestli funguje dobře."],
+  ztratovost:["Ztrátovost","Kolik procent pingů se nevrátilo. 0 % je v pořádku, 100 % znamená, že zařízení neodpovídá vůbec. Hodnoty mezi tím jsou zhoršená linka."],
+  snmp:["SNMP","Protokol, kterým se ze zařízení vyčítají podrobnosti — kolik dat proteklo, jak je vytížený procesor, kolik klientů visí na wifi. Vyžaduje přihlašovací údaje."],
+  sonda:["Sonda / kolektor","Malý program běžící u vás v síti, který pravidelně obchází zařízení a měří. Data si ukládá k sobě a posílá je do centrály."],
+  buffer:["Buffer / vyrovnávací paměť","Místo na disku sondy, kam se data ukládají, když se nedá spojit s centrálou. Po obnovení spojení se odešlou zpětně."],
+  centrala:["Centrála / mozek","Ta část systému, která z naměřených čísel rozhoduje, co je porucha, a komu se má poslat zpráva. Běží v cloudu, ne u vás."],
+  incident:["Incident","Jedna porucha, jak ji vidí člověk. Může pod sebou mít víc nefunkčních zařízení. To, co se potvrzuje a odkládá, je incident — ne jednotlivá zařízení."],
+  vypadek:["Výpadek (záznam)","Zápis v databázi, že konkrétní zařízení bylo od–do nedostupné. Fakt, ze kterého se pak počítají incidenty a smluvní dostupnost."],
+  mtls:["mTLS","Šifrované spojení, kde se navzájem prokazují obě strany certifikátem. Cizí sonda se nepřipojí, i kdyby znala adresu."],
+  go:["Go","Programovací jazyk. Výsledkem je jediný soubor, který se zkopíruje na server a spustí — nic dalšího se nemusí instalovat."],
+  timescale:["TimescaleDB","Databáze uzpůsobená na obrovské množství měření v čase. Umí data automaticky zhušťovat a mazat starší podrobnosti."],
+  agregace:["Agregace / zhuštění","Z minutových měření se udělají hodinové a denní průměry. Ušetří to místo, ale detail už se zpětně nedá získat."],
+  uplink:["Uplink","Kabel nebo spoj, kterým celý bod sítě visí na zbytku sítě. Když je vytížený na 100 %, je pomalu celý bod — i když jednotlivá zařízení jedou."],
+  cpe:["CPE","Zařízení u klienta doma — anténa, router, modem."],
+  radius:["RADIUS","Systém, který klienty pouští do sítě a zapisuje, kdy se připojili a kolik dat přenesli."],
+  nas:["NAS (v RADIUSu)","Zařízení, které klienty do sítě pouští a hlásí to RADIUSu — u vás typicky MikroTik."],
+  fup:["FUP","Omezení rychlosti po vyčerpání objemu dat."],
+  netflow:["NetFlow","Podrobný záznam o tom, kdo s kým komunikoval. Používá se na řešení potíží a na zákonnou evidenci provozu. Něco jiného než měření objemu."],
+  eic:["EIC kód","Jednoznačné označení odběrného místa elektřiny, začíná „24Z…“. Distributor podle něj hlásí výpadky proudu. Bez něj nedokážeme spárovat výpadek proudu s naším bodem sítě."],
+  distributor:["ZSD / VSD / SSD","Tři slovenští distributoři elektřiny — Západoslovenská, Východoslovenská a Stredoslovenská. První dva zveřejňují výpadky tak, že se dají číst automaticky; třetí jen plánované."],
+  sla:["SLA / dostupnost","Smluvně slíbená dostupnost služby a případná sleva, když se nedodrží."],
+  noc:["NOC obrazovka","Přehled toho, co je právě rozbité, seřazený podle důležitosti. Podle něj se rozhoduje, co se řeší teď."],
+  ack:["Potvrzení (ack)","Kliknutí „vidím to, dělám na tom“. Systém přestane připomínat, ale porucha zůstane otevřená. Není to totéž co uzavřít."],
+  deadman:["Hlídač (dead-man's switch)","Služba mimo naši infrastrukturu, které se každou chvíli ozveme. Když se neozveme, ozve se ona vám. Jediné, co odhalí, že spadl celý systém včetně hlídání."],
+  zabbix:["Zabbix","Nejrozšířenější hotový monitorovací systém. Zvažovali jsme ho a nakonec nepoužili."],
+  influx:["InfluxDB","Databáze, do které dnes starý systém ukládá měření. Máme z ní 3,8 GB historie."],
+  ispadmin2:["ISPadmin / NetMonitor","Váš současný systém a jeho monitorovací část. Umí měřit, ale neumí z toho udělat srozumitelnou poruchu ani nikoho pořádně upozornit."],
+  ses:["Amazon SES","Služba na rozesílání e-mailů. Použijeme frankfurtskou variantu, aby data zůstala v EU."],
+  twilio:["Twilio","Služba na rozesílání SMS. Použijeme dublinskou variantu."]
+};
+
+/* ── state ───────────────────────────────── */
+const KEY = "na_fb_" + PART_ID;
+let S = { replies:{}, notes:[] };
+try { S = Object.assign(S, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch(e){}
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
+
+const clauses = () => [...document.querySelectorAll(".clause")];
+
+/* ── terms ───────────────────────────────── */
+function wireTerms(){
+  document.querySelectorAll(".tt").forEach(el=>{
+    if(el.dataset.wired) return; el.dataset.wired="1";
+    const k = el.dataset.t;
+    if(TERMS[k] && !el.querySelector("sup")){
+      const s=document.createElement("sup"); s.textContent="?"; el.appendChild(s);
+    }
+    el.setAttribute("role","button"); el.setAttribute("tabindex","0");
+    const open = ()=>openSheet(k);
+    el.addEventListener("click",open);
+    el.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();open();} });
+  });
+}
+const sheet=document.getElementById("sheet");
+function openSheet(k){
+  const t=TERMS[k]; if(!t) return;
+  document.getElementById("sheetk").textContent="Vysvětlení pojmu";
+  document.getElementById("sheeth").textContent=t[0];
+  document.getElementById("sheetp").textContent=t[1];
+  sheet.classList.add("on");
+}
+document.getElementById("sheetx").onclick=()=>sheet.classList.remove("on");
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") sheet.classList.remove("on"); });
+document.addEventListener("click",e=>{
+  if(sheet.classList.contains("on") && !sheet.contains(e.target) && !e.target.closest(".tt"))
+    sheet.classList.remove("on");
+});
+
+/* ── glossary render ─────────────────────── */
+function renderGloss(){
+  const dl=document.getElementById("glossdl");
+  const used=new Set([...document.querySelectorAll(".tt")].map(e=>e.dataset.t));
+  [...used].filter(k=>TERMS[k]).sort((a,b)=>TERMS[a][0].localeCompare(TERMS[b][0],"cs"))
+   .forEach(k=>{
+     const dt=document.createElement("dt"); dt.textContent=TERMS[k][0];
+     const dd=document.createElement("dd"); dd.textContent=TERMS[k][1];
+     dl.append(dt,dd);
+   });
+}
+
+/* ── replies ─────────────────────────────── */
+function buildReplies(){
+  clauses().forEach(c=>{
+    const id=c.id;
+    const box=document.createElement("div");
+    box.className="replybox"; box.dataset.for=id;
+    box.innerHTML =
+      '<div class="rhead"><span class="lab">Tvoje odpověď</span>'+
+      '<span class="chip">bez odpovědi</span></div>'+
+      '<textarea placeholder="Souhlasím / nesouhlasím, protože…"></textarea>'+
+      '<div class="notes"></div>';
+    c.querySelector(".cbody").appendChild(box);
+    const ta=box.querySelector("textarea");
+    ta.value = S.replies[id] || "";
+    autosize(ta);
+    ta.addEventListener("input",()=>{
+      S.replies[id]=ta.value; save(); paint(c); autosize(ta);
+    });
+    paint(c);
+  });
+}
+function autosize(ta){ ta.style.height="auto"; ta.style.height=(ta.scrollHeight+2)+"px"; }
+function paint(c){
+  const id=c.id;
+  const has = (S.replies[id]||"").trim().length>0 || S.notes.some(n=>n.decId===id);
+  const box=c.querySelector(".replybox");
+  box.classList.toggle("has",has);
+  const chip=box.querySelector(".chip");
+  chip.textContent = has ? "odpovězeno" : "bez odpovědi";
+  chip.classList.toggle("ok",has);
+  c.classList.toggle("answered",has);
+  renderNotes(c);
+  progress();
+}
+function renderNotes(c){
+  const wrap=c.querySelector(".notes"); wrap.innerHTML="";
+  S.notes.filter(n=>n.decId===c.id).forEach(n=>{
+    const d=document.createElement("div"); d.className="note";
+    const b=document.createElement("blockquote"); b.textContent="„"+n.quote+"“";
+    const x=document.createElement("button"); x.className="del"; x.textContent="smazat";
+    x.onclick=()=>{ S.notes=S.notes.filter(m=>m.id!==n.id); save();
+      document.querySelectorAll('mark.q[data-n="'+n.id+'"]').forEach(m=>{
+        m.replaceWith(...m.childNodes); });
+      paint(c); };
+    const ta=document.createElement("textarea");
+    ta.placeholder="Co k té větě chceš říct?"; ta.value=n.text||"";
+    ta.addEventListener("input",()=>{ n.text=ta.value; save(); autosize(ta); paint(c); });
+    b.appendChild(x); d.append(b,ta); wrap.appendChild(d);
+    autosize(ta);
+  });
+}
+function progress(){
+  const cs=clauses();
+  const done=cs.filter(c=>c.classList.contains("answered")).length;
+  document.getElementById("ptxt").textContent=done+" / "+cs.length;
+  document.getElementById("pbar").style.width=(cs.length?done/cs.length*100:0)+"%";
+  const missing=cs.filter(c=>!c.classList.contains("answered")).map(c=>c.id);
+  const ml=document.getElementById("misslist");
+  ml.innerHTML = missing.length
+    ? "<b>Zatím bez odpovědi ("+missing.length+"):</b> "+missing.map(id=>'<a href="#'+id+'">'+id+'</a>').join(" · ")
+    : "<b>Odpověděl jsi na všechno.</b>";
+}
+
+/* ── selection → note ────────────────────── */
+const selbtn=document.getElementById("selbtn");
+let pending=null;
+document.addEventListener("mouseup",checkSel);
+document.addEventListener("touchend",checkSel);
+function checkSel(){
+  setTimeout(()=>{
+    const sel=window.getSelection();
+    if(!sel || sel.isCollapsed || !sel.toString().trim()){ selbtn.style.display="none"; pending=null; return; }
+    const r=sel.getRangeAt(0);
+    const host=(r.commonAncestorContainer.nodeType===1?r.commonAncestorContainer
+                :r.commonAncestorContainer.parentElement).closest(".clause");
+    if(!host || r.startContainer.parentElement.closest(".replybox")){
+      selbtn.style.display="none"; pending=null; return; }
+    const b=r.getBoundingClientRect();
+    selbtn.style.display="block";
+    selbtn.style.top=(window.scrollY+b.top-38)+"px";
+    selbtn.style.left=(window.scrollX+b.left)+"px";
+    pending={range:r.cloneRange(), text:sel.toString().trim().replace(/\s+/g," "), decId:host.id};
+  },10);
+}
+selbtn.onclick=()=>{
+  if(!pending) return;
+  const n={ id:pending.decId+"-p"+(S.notes.filter(x=>x.decId===pending.decId).length+1),
+            decId:pending.decId, quote:pending.text.slice(0,300), text:"" };
+  S.notes.push(n); save();
+  try{ const m=document.createElement("mark"); m.className="q"; m.dataset.n=n.id;
+       pending.range.surroundContents(m); }catch(e){}
+  window.getSelection().removeAllRanges();
+  selbtn.style.display="none";
+  const c=document.getElementById(n.decId); paint(c);
+  const tas=c.querySelectorAll(".note textarea"); if(tas.length) tas[tas.length-1].focus();
+  pending=null;
+};
+
+/* ── export ──────────────────────────────── */
+// The heading contains "?" markers from the glossary terms — strip them for the e-mail.
+function title(c){
+  const h=c.querySelector("h3").cloneNode(true);
+  h.querySelectorAll("sup").forEach(s=>s.remove());
+  return h.textContent.replace(/\s+/g," ").trim();
+}
+function compile(){
+  const cs=clauses();
+  const done=cs.filter(c=>c.classList.contains("answered"));
+  const L=[];
+  L.push("ZPĚTNÁ VAZBA — "+PART_NAME);
+  L.push("Datum: "+new Date().toLocaleString("cs-CZ"));
+  L.push("Zodpovězeno: "+done.length+" z "+cs.length);
+  L.push("");
+  L.push("════ ODPOVĚDI ════");
+  cs.forEach(c=>{
+    const id=c.id;
+    const r=(S.replies[id]||"").trim();
+    const ns=S.notes.filter(n=>n.decId===id && (n.text||"").trim());
+    if(!r && !ns.length) return;
+    L.push("");
+    L.push("["+id+"] "+title(c));
+    const q=c.dataset.q; if(q) L.push("  otázka: "+q);
+    if(r) L.push("  ODPOVĚĎ: "+r.replace(/\n/g,"\n           "));
+    ns.forEach(n=>{
+      L.push("  ── k větě: „"+n.quote+"“");
+      L.push("     ["+n.id+"] "+n.text.trim().replace(/\n/g,"\n     "));
+    });
+  });
+  const missing=cs.filter(c=>!c.classList.contains("answered")).map(c=>c.id);
+  L.push(""); L.push("════ BEZ ODPOVĚDI ("+missing.length+") ════");
+  L.push(missing.join(", ") || "—");
+  L.push(""); L.push("(vygenerováno z "+PART_NAME+")");
+  return L.join("\n");
+}
+function toast(m){ const t=document.getElementById("toast"); t.textContent=m;
+  t.classList.add("on"); setTimeout(()=>t.classList.remove("on"),2600); }
+async function copyTxt(t){
+  try{ await navigator.clipboard.writeText(t); return true; }
+  catch(e){ const ta=document.createElement("textarea"); ta.value=t;
+    ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
+    ta.select(); let ok=false; try{ ok=document.execCommand("copy"); }catch(_){}
+    ta.remove(); return ok; }
+}
+// The page runs inside a sandboxed frame, so it must never navigate anywhere itself —
+// a programmatic `location.href = "mailto:…"` gets blocked and replaces the whole page
+// with an error screen. Everything below therefore stays inside the frame: the text is
+// shown for copying, and the mail link is a real anchor the reader clicks.
+let modal=null;
+function buildModal(){
+  modal=document.createElement("div"); modal.id="modal";
+  modal.innerHTML=
+    '<div class="mcard">'+
+      '<h3>Zpětná vazba je připravená</h3>'+
+      '<p class="lead">Zkopíruj text a pošli ho Ladimu — e-mailem, přes WhatsApp, jakkoliv. '+
+      'Nemusíš nic upravovat.</p>'+
+      '<textarea class="out" readonly spellcheck="false"></textarea>'+
+      '<div class="mrow">'+
+        '<button class="btn btn-p" data-a="copy">Zkopírovat text</button>'+
+        '<a class="btn" data-a="mail" target="_blank" rel="noopener">Otevřít e-mail</a>'+
+        '<a class="btn" data-a="dl" download>Stáhnout soubor</a>'+
+        '<button class="btn" data-a="close" style="margin-left:auto">Zavřít</button>'+
+      '</div>'+
+      '<p class="mnote">Kdyby „Otevřít e-mail" nefungovalo, nevadí — text je ve schránce. '+
+      'Adresa: '+MAILTO+'</p>'+
+    '</div>';
+  document.body.appendChild(modal);
+  modal.addEventListener("click",e=>{ if(e.target===modal) closeModal(); });
+  modal.querySelector('[data-a="close"]').onclick=closeModal;
+  modal.querySelector('[data-a="copy"]').onclick=async e=>{
+    const ta=modal.querySelector("textarea.out");
+    ta.select(); ta.setSelectionRange(0,ta.value.length);
+    const ok=await copyTxt(ta.value);
+    e.target.textContent = ok ? "Zkopírováno ✓" : "Zkopíruj ručně (Ctrl+C)";
+    setTimeout(()=>{ e.target.textContent="Zkopírovat text"; },2500);
+  };
+}
+function closeModal(){ if(modal) modal.classList.remove("on"); }
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+
+async function doSend(){
+  if(!modal) buildModal();
+  const txt=compile();
+  const cs=clauses().length;
+  const done=clauses().filter(c=>c.classList.contains("answered")).length;
+  const subj="Zpětná vazba — "+PART_NAME+" ("+done+"/"+cs+")";
+  modal.querySelector("textarea.out").value=txt;
+  // Short mails only: a very long mailto: is silently dropped by some clients.
+  const body = txt.length<1500 ? txt
+    : "Zpětná vazba je zkopírovaná ve schránce — vlož ji sem přes Ctrl+V (Cmd+V).";
+  modal.querySelector('[data-a="mail"]').href =
+    "mailto:"+MAILTO+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
+  const dl=modal.querySelector('[data-a="dl"]');
+  try{
+    if(dl.dataset.url) URL.revokeObjectURL(dl.dataset.url);
+    const url=URL.createObjectURL(new Blob([txt],{type:"text/plain;charset=utf-8"}));
+    dl.href=url; dl.dataset.url=url; dl.download="zpetna-vazba-"+PART_ID.toLowerCase()+".txt";
+  }catch(e){ dl.style.display="none"; }   // download unsupported here — copying still works
+  modal.classList.add("on");
+  copyTxt(txt).then(ok=>{ if(ok) toast("Text je i ve schránce"); });
+}
+document.getElementById("send2").onclick=doSend;
+document.getElementById("topsend").onclick=doSend;
+document.getElementById("copy2").onclick=async()=>{
+  toast(await copyTxt(compile())?"Zkopírováno do schránky":"Nešlo zkopírovat — použij Odeslat"); };
+document.getElementById("dl2").onclick=doSend;
+
+// If the browser refuses to remember anything (private mode, blocked storage), say so
+// rather than let the reader lose an hour of writing.
+(function(){
+  let works=false;
+  try{ localStorage.setItem("__t","1"); localStorage.removeItem("__t"); works=true; }catch(e){}
+  if(works) return;
+  const w=document.createElement("div");
+  w.className="howto"; w.style.borderColor="var(--accent)";
+  w.innerHTML='<h2>Pozor — tenhle prohlížeč neukládá rozepsané odpovědi</h2>'+
+    '<p style="margin:0;color:var(--ink-soft);font-size:.95rem">Odpovědi zmizí, když stránku '+
+    'zavřeš. Projdi to na jeden zátah a na konci klikni na <b>Odeslat</b>.</p>';
+  const h=document.querySelector(".howto");
+  h.parentNode.insertBefore(w,h.nextSibling);
+})();
+
+/* ── nav ─────────────────────────────────── */
+document.querySelectorAll("[data-nav]").forEach(a=>{
+  const u=LINKS[a.dataset.nav];
+  if(u) a.href=u; else a.style.display="none";
+});
+
+wireTerms(); renderGloss(); buildReplies(); progress();
+</script>
+
+</body>
+</html>

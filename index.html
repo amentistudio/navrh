@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>Nový systém: co jsme rozhodli a co potřebujeme od tebe</title>
+<style>
+:root{
+  --paper:#EDF0F4; --card:#F8FAFC; --ink:#14181E; --ink-soft:#4E5866; --ink-faint:#78838F;
+  --rule:#C7D0DA; --rule-soft:#DEE4EB; --accent:#1F4B99; --accent-soft:#E2EAF7;
+  --done:#2C6B4E; --done-soft:#DDEDE4; --mark:#FBEFC6;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0F1319; --card:#161C25; --ink:#E6EBF1; --ink-soft:#9AA6B4; --ink-faint:#77828F;
+    --rule:#2B3542; --rule-soft:#212A35; --accent:#84A9E9; --accent-soft:#1A2740;
+    --done:#74C39A; --done-soft:#172B22; --mark:#4A3F1B;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1319; --card:#161C25; --ink:#E6EBF1; --ink-soft:#9AA6B4; --ink-faint:#77828F;
+  --rule:#2B3542; --rule-soft:#212A35; --accent:#84A9E9; --accent-soft:#1A2740;
+  --done:#74C39A; --done-soft:#172B22; --mark:#4A3F1B;
+}
+:root[data-theme="light"]{
+  --paper:#EDF0F4; --card:#F8FAFC; --ink:#14181E; --ink-soft:#4E5866; --ink-faint:#78838F;
+  --rule:#C7D0DA; --rule-soft:#DEE4EB; --accent:#1F4B99; --accent-soft:#E2EAF7;
+  --done:#2C6B4E; --done-soft:#DDEDE4; --mark:#FBEFC6;
+}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--serif);
+  font-size:17px;line-height:1.66;margin:0;-webkit-text-size-adjust:100%}
+.wrap{max-width:52rem;margin:0 auto;padding:0 1.25rem 8rem}
+
+/* ── topbar ─────────────────────────────── */
+.top{position:sticky;top:0;z-index:40;background:var(--paper);
+  border-bottom:1px solid var(--rule);font-family:var(--sans)}
+.top-in{max-width:52rem;margin:0 auto;padding:.6rem 1.25rem;display:flex;
+  align-items:center;gap:.9rem;flex-wrap:wrap}
+.crumb{font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-faint);font-weight:600}
+.crumb a{color:var(--ink-faint)}
+.prog{margin-left:auto;display:flex;align-items:center;gap:.6rem;font-size:.8rem;color:var(--ink-soft)}
+.bar{width:110px;height:5px;background:var(--rule-soft);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--done);transition:width .3s}
+.btn{font-family:var(--sans);font-size:.8rem;font-weight:600;padding:.42rem .8rem;
+  border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:2px;cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn-p{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-p:hover{opacity:.88;color:#fff}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── masthead ───────────────────────────── */
+header.mast{padding:3.2rem 0 1.6rem;border-bottom:2px solid var(--ink)}
+.kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 1rem}
+h1{font-size:clamp(2rem,5vw,2.9rem);line-height:1.12;margin:0 0 .8rem;
+  font-weight:600;text-wrap:balance;letter-spacing:-.015em}
+.stand{font-size:1.1rem;color:var(--ink-soft);margin:0;max-width:38rem}
+
+/* ── how-to ─────────────────────────────── */
+.howto{background:var(--card);border:1px solid var(--rule);padding:1.3rem 1.4rem;margin:2rem 0}
+.howto h2{font-size:.78rem;font-family:var(--sans);letter-spacing:.1em;text-transform:uppercase;
+  margin:0 0 .7rem;color:var(--accent)}
+.howto ol{margin:0;padding-left:1.2rem;font-size:.95rem;color:var(--ink-soft)}
+.howto li{margin:.35rem 0}
+.howto b{color:var(--ink)}
+
+/* ── sections ───────────────────────────── */
+section.grp{margin:3.4rem 0 0}
+.grp>h2{font-size:1.5rem;margin:0 0 .3rem;font-weight:600;letter-spacing:-.01em}
+.grp>.gsub{color:var(--ink-soft);font-size:.98rem;margin:0 0 1.6rem;max-width:40rem}
+.gtag{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-faint);display:block;margin-bottom:.5rem}
+
+/* ── clause ─────────────────────────────── */
+.clause{border-top:1px solid var(--rule);padding:1.8rem 0 1.9rem;display:grid;
+  grid-template-columns:5.4rem 1fr;gap:0 1.4rem;scroll-margin-top:4.5rem}
+.cnum{font-family:var(--mono);font-size:.74rem;color:var(--ink-faint);padding-top:.42rem;
+  letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.clause.answered .cnum{color:var(--done)}
+.clause h3{font-size:1.16rem;margin:0 0 .9rem;font-weight:600;line-height:1.32;text-wrap:balance}
+.field{margin:0 0 .85rem}
+.lab{font-family:var(--sans);font-size:.68rem;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-faint);display:block;margin-bottom:.15rem}
+.field p,.ask p{margin:0}
+.field+.field{margin-top:.85rem}
+.ask{margin:1.1rem 0 0;padding:.85rem 1rem;background:var(--accent-soft);border-left:2px solid var(--accent)}
+.ask .lab{color:var(--accent)}
+.ask p{font-size:.98rem}
+.num{font-variant-numeric:tabular-nums}
+.clause ul{margin:.3rem 0;padding-left:1.15rem}
+.clause li{margin:.2rem 0}
+
+/* ── terms ──────────────────────────────── */
+.tt{border-bottom:1px dotted var(--accent);color:inherit;cursor:pointer;
+  text-decoration:none;background:none;border-top:0;border-left:0;border-right:0;
+  padding:0;font:inherit}
+.tt sup{font-family:var(--sans);font-size:.62em;color:var(--accent);font-weight:700;
+  padding-left:.1em;vertical-align:super}
+.tt:hover{background:var(--accent-soft)}
+
+/* ── reply block ────────────────────────── */
+.replybox{margin-top:1.1rem;border:1px dashed var(--rule);background:var(--card);padding:.8rem .9rem}
+.replybox.has{border-style:solid;border-color:var(--done);background:var(--done-soft)}
+.rhead{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;font-family:var(--sans)}
+.rhead .lab{margin:0}
+.chip{font-family:var(--sans);font-size:.66rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;padding:.14rem .45rem;border:1px solid var(--rule);color:var(--ink-faint)}
+.chip.ok{border-color:var(--done);color:var(--done)}
+textarea{width:100%;font-family:var(--serif);font-size:.98rem;line-height:1.55;color:var(--ink);
+  background:transparent;border:0;resize:vertical;min-height:3.4rem;padding:0}
+textarea::placeholder{color:var(--ink-faint)}
+textarea:focus{outline:none}
+.notes{margin-top:.7rem;display:flex;flex-direction:column;gap:.6rem}
+.note{border-left:2px solid var(--accent);padding:.5rem .7rem;background:var(--card)}
+.note blockquote{margin:0 0 .35rem;font-size:.88rem;color:var(--ink-soft);font-style:italic}
+.note .del{float:right;font-family:var(--sans);font-size:.7rem;color:var(--ink-faint);
+  background:none;border:0;cursor:pointer;padding:0 0 0 .5rem}
+.note .del:hover{color:var(--accent)}
+mark.q{background:var(--mark);color:inherit;padding:0 .1em}
+
+/* ── floating select button ─────────────── */
+#selbtn{position:absolute;z-index:60;display:none;font-family:var(--sans);font-size:.76rem;
+  font-weight:700;background:var(--accent);color:#fff;border:0;padding:.4rem .7rem;
+  border-radius:2px;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.28)}
+
+/* ── term sheet ─────────────────────────── */
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:80;background:var(--card);
+  border-top:2px solid var(--accent);padding:1.2rem 1.25rem 1.5rem;transform:translateY(110%);
+  transition:transform .22s ease;box-shadow:0 -8px 30px rgba(0,0,0,.2)}
+#sheet.on{transform:translateY(0)}
+.sheet-in{max-width:52rem;margin:0 auto;position:relative}
+#sheet h4{margin:0 0 .3rem;font-size:1.1rem}
+#sheet p{margin:0;color:var(--ink-soft);font-size:.97rem;max-width:44rem}
+#sheet .x{position:absolute;top:-.3rem;right:0;background:none;border:0;font-size:1.3rem;
+  color:var(--ink-faint);cursor:pointer;line-height:1;font-family:var(--sans)}
+#sheet .k{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--accent);display:block;margin-bottom:.4rem}
+
+/* ── send ───────────────────────────────── */
+.send{margin:4rem 0 0;border:2px solid var(--ink);padding:1.6rem 1.5rem;background:var(--card)}
+.send h2{margin:0 0 .5rem;font-size:1.35rem}
+.send p{margin:0 0 1.1rem;color:var(--ink-soft);font-size:.97rem}
+.send .row{display:flex;gap:.6rem;flex-wrap:wrap}
+.miss{margin-top:1.1rem;font-size:.87rem;color:var(--ink-soft);font-family:var(--sans)}
+.miss a{color:var(--accent);font-family:var(--mono);font-size:.84em}
+
+/* ── glossary ───────────────────────────── */
+.gloss{margin:4rem 0 0;border-top:2px solid var(--ink);padding-top:1.6rem}
+.gloss h2{font-size:1.4rem;margin:0 0 1.2rem}
+.gloss dl{margin:0;display:grid;gap:.9rem}
+.gloss dt{font-family:var(--mono);font-size:.82rem;color:var(--accent);font-weight:600}
+.gloss dd{margin:.1rem 0 0;color:var(--ink-soft);font-size:.95rem}
+
+.nav{margin:3rem 0 0;display:flex;gap:.8rem;flex-wrap:wrap;font-family:var(--sans);font-size:.88rem}
+.nav a{color:var(--accent);text-decoration:none;border:1px solid var(--rule);padding:.5rem .8rem}
+.nav a:hover{border-color:var(--accent)}
+/* ── export modal ───────────────────────── */
+#modal{position:fixed;inset:0;z-index:100;background:rgba(10,14,20,.62);display:none;
+  align-items:center;justify-content:center;padding:1rem}
+#modal.on{display:flex}
+.mcard{background:var(--paper);border:2px solid var(--ink);max-width:44rem;width:100%;
+  max-height:88vh;display:flex;flex-direction:column;padding:1.3rem 1.4rem 1.4rem}
+.mcard h3{margin:0 0 .4rem;font-size:1.25rem}
+.mcard .lead{margin:0 0 .9rem;color:var(--ink-soft);font-size:.95rem}
+.mcard textarea.out{flex:1;min-height:12rem;background:var(--card);border:1px solid var(--rule);
+  font-family:var(--mono);font-size:.78rem;line-height:1.5;padding:.7rem .8rem;
+  white-space:pre;overflow:auto;resize:none}
+.mrow{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.9rem;align-items:center}
+.mrow a.btn{text-decoration:none;display:inline-block}
+.mnote{font-family:var(--sans);font-size:.8rem;color:var(--ink-faint);margin:.7rem 0 0}
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%) translateY(200%);
+  background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.85rem;
+  padding:.6rem 1rem;border-radius:2px;z-index:90;transition:transform .25s}
+.toast.on{transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:640px){
+  body{font-size:16px}
+  .clause{grid-template-columns:1fr;gap:.3rem}
+  .cnum{padding-top:0}
+}
+</style>
+
+
+<style>
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin:2.4rem 0 0}
+@media (max-width:720px){.two{grid-template-columns:1fr}}
+.pcard{border:1px solid var(--rule);background:var(--card);padding:1.4rem 1.4rem 1.5rem;
+  display:flex;flex-direction:column;gap:.6rem}
+.pcard .pn{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.pcard h3{margin:0;font-size:1.3rem;line-height:1.25;text-wrap:balance}
+.pcard p{margin:0;color:var(--ink-soft);font-size:.95rem}
+.pcard .meta{font-family:var(--sans);font-size:.78rem;color:var(--ink-faint);
+  border-top:1px solid var(--rule-soft);padding-top:.6rem;margin-top:auto}
+.pcard a.go{font-family:var(--sans);font-weight:700;font-size:.9rem;color:#fff;background:var(--accent);
+  text-decoration:none;padding:.55rem .9rem;text-align:center;border:1px solid var(--accent)}
+.pcard a.go:hover{opacity:.88}
+.big{border-top:1px solid var(--rule);padding:1.1rem 0;display:grid;
+  grid-template-columns:5.4rem 1fr;gap:0 1.4rem}
+@media (max-width:640px){.big{grid-template-columns:1fr;gap:.25rem}}
+.big .bid{font-family:var(--mono);font-size:.74rem;color:var(--accent);padding-top:.2rem}
+.big h4{margin:0 0 .25rem;font-size:1.02rem;font-weight:600}
+.big p{margin:0;color:var(--ink-soft);font-size:.94rem}
+.big a{color:var(--accent)}
+.flow{border:1px solid var(--rule);background:var(--card);padding:1.3rem 1.4rem;margin:2rem 0 0}
+.flow ol{margin:0;padding-left:1.3rem;color:var(--ink-soft);font-size:.96rem}
+.flow li{margin:.4rem 0}
+.flow b{color:var(--ink)}
+</style>
+
+</head>
+<body>
+<div class="top"><div class="top-in">
+  <span class="crumb">ČadcaNet · rozcestník</span>
+  <span class="prog" style="font-family:var(--sans)">50 rozhodnutí ve 2 částech</span>
+</div></div>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="kicker">Pro Petra · zpracoval Ladi · červenec 2026</p>
+  <h1>Dvě věci, které stavíme. A padesát rozhodnutí, která jsme udělali bez tebe.</h1>
+  <p class="stand">Poslední měsíce jsme do hloubky promýšleli dvě části nového systému:
+  <b>telefony</b> a <b>hlídání sítě</b>. Nic z toho ještě není postavené — zato je hotový
+  návrh, který obsahuje spoustu rozhodnutí. Některá jsou technická a je jedno, jak dopadla.
+  Jiná ale mění, jak se u vás pracuje, kolik to stojí nebo jestli to bude vůbec k něčemu —
+  a ta jsme neměli právo udělat sami.</p>
+</header>
+
+<div class="howto">
+  <h2>Co od tebe potřebujeme</h2>
+  <ol>
+    <li>Projít obě části a <b>u každého rozhodnutí napsat, jestli sedí</b>. Klidně
+    „ok" — mlčení ale nepočítáme jako souhlas.</li>
+    <li>Zvlášť si všímej rámečků <b>„Otázka na tebe"</b>. Tam se ptáme na věci, které
+    z dat ani z rozhovorů nevyčteme.</li>
+    <li>Odpovědi se píší <b>přímo do stránky</b>. Když budeš hotový, klikneš na
+    <b>Odeslat</b>, stránka ti složí hotový text a ty ho pošleš Ladimu.</li>
+    <li>Nemusíš to dát najednou. Rozepsané odpovědi zůstanou uložené v prohlížeči —
+    ale stránku znovu otevři <b>na stejném počítači</b>.</li>
+    <li><b>Každou část odešli zvlášť.</b> Jsou to dvě samostatné stránky.</li>
+  </ol>
+</div>
+
+<div class="two">
+  <div class="pcard">
+    <span class="pn">Část 1</span>
+    <h3>Telefonie</h3>
+    <p>Vlastní ústředna, jedno nové číslo s hlasovým menu, karta klienta vyskočí při
+    zazvonění, nahrávání a přepis hovorů, hlasová schránka místo SMS brány.</p>
+    <p class="meta">22 rozhodnutí · zhruba 15 minut čtení<br>Nejtěžší otázka: nahrávání
+    kvůli kontrole techniků</p>
+    <a class="go" href="#" data-nav="part1">Otevřít část 1 →</a>
+  </div>
+  <div class="pcard">
+    <span class="pn">Část 2</span>
+    <h3>Monitoring sítě</h3>
+    <p>Nepřetržité hlídání 1 029 zařízení, rozpoznání poruchy, upozornění e-mailem a SMS,
+    párování s výpadky proudu, přehled výdělečnosti bodů sítě.</p>
+    <p class="meta">28 rozhodnutí · zhruba 20 minut čtení<br>Nejtěžší otázka: chybí
+    149 kódů odběrných míst</p>
+    <a class="go" href="#" data-nav="part2">Otevřít část 2 →</a>
+  </div>
+</div>
+
+<div class="flow">
+  <h2 style="font-size:.78rem;font-family:var(--sans);letter-spacing:.1em;text-transform:uppercase;margin:0 0 .7rem;color:var(--accent)">Proč to spolu souvisí</h2>
+  <p style="margin:0 0 .7rem;color:var(--ink-soft);font-size:.96rem">Vypadá to jako dva
+  nezávislé projekty. Nejsou. Tohle je situace, kvůli které se vyplatí stavět obojí:</p>
+  <ol>
+    <li>Ve Skalitém spadne <b>proud</b>. Distributor to zveřejní, systém to během minuty
+    přečte a <b>spáruje s bodem sítě</b>.</li>
+    <li>Zařízení na tom bodě přestanou odpovídat. Systém z toho udělá <b>jednu poruchu</b>
+    s doloženou příčinou — ne třicet záhad.</li>
+    <li>Pošle o tom <b>jednu zprávu</b> a založí <b>jeden úkol</b>.</li>
+    <li>Za pět minut volá první klient. Jeho <b>karta vyskočí</b> ještě před zvednutím
+    a je na ní napsáno: <b>„Tento klient je postižen — výpadek proudu, obnova do 17:00."</b>
+    Operátorka to řekne dřív, než se stihne zeptat na jméno.</li>
+    <li>Hovor se <b>přiřadí ke stejné poruše</b>. Když zavolá šestý člověk, dispečer vidí
+    „známá porucha, 6 volajících" — ne šest samostatných úkolů.</li>
+    <li>Technik to opraví, do úkolu se zapíše výsledek a všech šest lidí se dá vyrozumět
+    najednou.</li>
+  </ol>
+  <p style="margin:.8rem 0 0;color:var(--ink-soft);font-size:.96rem">Kterákoliv půlka
+  sama o sobě tohle neumí. A pozor — bod 1 dnes <b>nefunguje</b>, protože chybí kódy
+  odběrných míst (<a href="#" data-nav="part2" style="color:var(--accent)">NET-20</a>).</p>
+</div>
+
+<section class="grp">
+  <span class="gtag">Když nemáš čas na všechno</span>
+  <h2>Osm rozhodnutí, u kterých na tobě opravdu záleží</h2>
+  <p class="gsub">Zbytek jsou technikálie, které stačí přeletět. Tady tvoje
+  odpověď mění, co se postaví — nebo kolik to bude stát.</p>
+
+  <div class="big"><span class="bid">TEL-16</span><div>
+    <h4>Nahrávání kvůli kontrole techniků jsme vyřadili — a ty jsi ho chtěl</h4>
+    <p>Řekl jsi, že nahrávat chceš hlavně proto, abys viděl, jak technici mluví s klienty.
+    Právní rešerše ukázala, že přesně tohle je přísnější režim podle Zákonníku práce —
+    oznámení zaměstnancům, projednání, posouzení vlivu. Tak jsme to vyřadili. Možná jsme tím
+    vyřadili to hlavní. <a href="#" data-nav="part1">Otevřít →</a></p></div></div>
+
+  <div class="big"><span class="bid">TEL-04</span><div>
+    <h4>Můžeme objednat linku za 2,50 € měsíčně?</h4>
+    <p>VIPTel odpověděl na všechno, co jsme potřebovali. Nabídka je bez závazku, s měsíční výpovědní lhůtou a
+    zkušebním měsícem za méně než 11 €. Potřebujeme tvoje svolení a telefonní kontakt.
+    <a href="#" data-nav="part1">Otevřít →</a></p></div></div>
+
+  <div class="big"><span class="bid">TEL-14</span><div>
+    <h4>Přepis hovorů bude mít 25–45 % chyb. Je k něčemu?</h4>
+    <p>Slovenština má na trénování míň než 100 hodin veřejných nahrávek. Přepis je dobrý na
+    vyhledávání a rychlé pochopení toho, o čem byl hovor — ne jako doslovný záznam. Je to celá
+    jedna etapa práce a dá se vynechat. <a href="#" data-nav="part1">Otevřít →</a></p></div></div>
+
+  <div class="big"><span class="bid">NET-20</span><div>
+    <h4>Chybí 149 kódů odběrných míst — a bez nich stojí půlka monitoringu</h4>
+    <p>Výpadek proudu je jediná příčina, kterou systém umí prokázat. Kódy jsou na fakturách
+    za elektřinu. Je to 149 řádků k přepsání a odemkne to víc funkcí než cokoliv, co
+    naprogramujeme. <a href="#" data-nav="part2">Otevřít →</a></p></div></div>
+
+  <div class="big"><span class="bid">NET-25</span><div>
+    <h4>Výdělečnost bodů sítě: příjmy 56 800 € měsíčně, náklady nemáme žádné</h4>
+    <p>Chtěl jsi vidět, které body se vyplácejí a které zrušit. Příjmy umíme přiřadit k 91 % bodů.
+    Náklady nejsou vyplněné u žádného ze 149 bodů — takže přehled zatím ukáže jen polovinu rovnice.
+    <a href="#" data-nav="part2">Otevřít →</a></p></div></div>
+
+  <div class="big"><span class="bid">NET-24</span><div>
+    <h4>Historie měření ze starého systému se nepřenese. Nenávratně</h4>
+    <p>Jde o 3,8 GB dat, ze kterých se ale nedají zrekonstruovat staré výpadky — starý systém si
+    podrobnosti držel jen 48 hodin. Až se vypne, je to pryč. Pokud to chceš aspoň zazálohovat,
+    musí se to udělat předtím. <a href="#" data-nav="part2">Otevřít →</a></p></div></div>
+
+  <div class="big"><span class="bid">NET-17</span><div>
+    <h4>Porucha si sama založí úkol — tvoje rozhodnutí, my jsme byli proti</h4>
+    <p>U telefonů jsme se dohodli, že úkol vzniká jen když ho člověk potvrdí. U poruch jsi
+    chtěl opak. Přijali jsme to a přidali brzdy, ale chceme slyšet, že na tom trváš.
+    <a href="#" data-nav="part2">Otevřít →</a></p></div></div>
+
+  <div class="big"><span class="bid">NET-14</span><div>
+    <h4>Chceš být v noci buzený, nebo ne?</h4>
+    <p>Navrhli jsme, že mimo 8–17 projde jen to nejhorší a zbytek přijde ráno v 8 v souhrnu.
+    Tohle je jediné nastavení, které rozhoduje o tom, jestli si po dvou týdnech všichni
+    vypnou zvonění. <a href="#" data-nav="part2">Otevřít →</a></p></div></div>
+</section>
+
+<div class="howto" style="margin-top:3rem">
+  <h2>Poznámka na rovinu</h2>
+  <p style="margin:0;color:var(--ink-soft);font-size:.96rem">Pokud u něčeho napíšeš
+  „tohle je blbost" nebo „takhle to u nás nefunguje", je to <b>ta nejužitečnější věc</b>,
+  kterou můžeš udělat. Změnit rozhodnutí teď stojí odpoledne. Změnit ho, až to bude
+  postavené, stojí týdny. Na ničem z toho nelpíme z ješitnosti — všechno je to jen návrh.</p>
+</div>
+
+<nav class="nav" style="margin-top:2.4rem">
+  <a href="#" data-nav="part1">Část 1 — Telefonie →</a>
+  <a href="#" data-nav="part2">Část 2 — Monitoring sítě →</a>
+</nav>
+
+</div>
+
+<script>
+const LINKS = { part1:"cast-1.html", part2:"cast-2.html" };
+document.querySelectorAll("[data-nav]").forEach(a=>{
+  const u = LINKS[a.dataset.nav];
+  if(u) a.href = u; else { a.removeAttribute("href"); a.style.opacity=".5"; a.style.cursor="default"; }
+});
+</script>
+
+</body>
+</html>

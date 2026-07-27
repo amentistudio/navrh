@@ -1,0 +1,1348 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>Část 2 — Monitoring sítě: co jsme rozhodli</title>
+<style>
+:root{
+  --paper:#EDF0F4; --card:#F8FAFC; --ink:#14181E; --ink-soft:#4E5866; --ink-faint:#78838F;
+  --rule:#C7D0DA; --rule-soft:#DEE4EB; --accent:#1F4B99; --accent-soft:#E2EAF7;
+  --done:#2C6B4E; --done-soft:#DDEDE4; --mark:#FBEFC6;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0F1319; --card:#161C25; --ink:#E6EBF1; --ink-soft:#9AA6B4; --ink-faint:#77828F;
+    --rule:#2B3542; --rule-soft:#212A35; --accent:#84A9E9; --accent-soft:#1A2740;
+    --done:#74C39A; --done-soft:#172B22; --mark:#4A3F1B;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1319; --card:#161C25; --ink:#E6EBF1; --ink-soft:#9AA6B4; --ink-faint:#77828F;
+  --rule:#2B3542; --rule-soft:#212A35; --accent:#84A9E9; --accent-soft:#1A2740;
+  --done:#74C39A; --done-soft:#172B22; --mark:#4A3F1B;
+}
+:root[data-theme="light"]{
+  --paper:#EDF0F4; --card:#F8FAFC; --ink:#14181E; --ink-soft:#4E5866; --ink-faint:#78838F;
+  --rule:#C7D0DA; --rule-soft:#DEE4EB; --accent:#1F4B99; --accent-soft:#E2EAF7;
+  --done:#2C6B4E; --done-soft:#DDEDE4; --mark:#FBEFC6;
+}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--serif);
+  font-size:17px;line-height:1.66;margin:0;-webkit-text-size-adjust:100%}
+.wrap{max-width:52rem;margin:0 auto;padding:0 1.25rem 8rem}
+
+/* ── topbar ─────────────────────────────── */
+.top{position:sticky;top:0;z-index:40;background:var(--paper);
+  border-bottom:1px solid var(--rule);font-family:var(--sans)}
+.top-in{max-width:52rem;margin:0 auto;padding:.6rem 1.25rem;display:flex;
+  align-items:center;gap:.9rem;flex-wrap:wrap}
+.crumb{font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-faint);font-weight:600}
+.crumb a{color:var(--ink-faint)}
+.prog{margin-left:auto;display:flex;align-items:center;gap:.6rem;font-size:.8rem;color:var(--ink-soft)}
+.bar{width:110px;height:5px;background:var(--rule-soft);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--done);transition:width .3s}
+.btn{font-family:var(--sans);font-size:.8rem;font-weight:600;padding:.42rem .8rem;
+  border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:2px;cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn-p{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-p:hover{opacity:.88;color:#fff}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── masthead ───────────────────────────── */
+header.mast{padding:3.2rem 0 1.6rem;border-bottom:2px solid var(--ink)}
+.kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 1rem}
+h1{font-size:clamp(2rem,5vw,2.9rem);line-height:1.12;margin:0 0 .8rem;
+  font-weight:600;text-wrap:balance;letter-spacing:-.015em}
+.stand{font-size:1.1rem;color:var(--ink-soft);margin:0;max-width:38rem}
+
+/* ── how-to ─────────────────────────────── */
+.howto{background:var(--card);border:1px solid var(--rule);padding:1.3rem 1.4rem;margin:2rem 0}
+.howto h2{font-size:.78rem;font-family:var(--sans);letter-spacing:.1em;text-transform:uppercase;
+  margin:0 0 .7rem;color:var(--accent)}
+.howto ol{margin:0;padding-left:1.2rem;font-size:.95rem;color:var(--ink-soft)}
+.howto li{margin:.35rem 0}
+.howto b{color:var(--ink)}
+
+/* ── sections ───────────────────────────── */
+section.grp{margin:3.4rem 0 0}
+.grp>h2{font-size:1.5rem;margin:0 0 .3rem;font-weight:600;letter-spacing:-.01em}
+.grp>.gsub{color:var(--ink-soft);font-size:.98rem;margin:0 0 1.6rem;max-width:40rem}
+.gtag{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-faint);display:block;margin-bottom:.5rem}
+
+/* ── clause ─────────────────────────────── */
+.clause{border-top:1px solid var(--rule);padding:1.8rem 0 1.9rem;display:grid;
+  grid-template-columns:5.4rem 1fr;gap:0 1.4rem;scroll-margin-top:4.5rem}
+.cnum{font-family:var(--mono);font-size:.74rem;color:var(--ink-faint);padding-top:.42rem;
+  letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.clause.answered .cnum{color:var(--done)}
+.clause h3{font-size:1.16rem;margin:0 0 .9rem;font-weight:600;line-height:1.32;text-wrap:balance}
+.field{margin:0 0 .85rem}
+.lab{font-family:var(--sans);font-size:.68rem;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-faint);display:block;margin-bottom:.15rem}
+.field p,.ask p{margin:0}
+.field+.field{margin-top:.85rem}
+.ask{margin:1.1rem 0 0;padding:.85rem 1rem;background:var(--accent-soft);border-left:2px solid var(--accent)}
+.ask .lab{color:var(--accent)}
+.ask p{font-size:.98rem}
+.num{font-variant-numeric:tabular-nums}
+.clause ul{margin:.3rem 0;padding-left:1.15rem}
+.clause li{margin:.2rem 0}
+
+/* ── terms ──────────────────────────────── */
+.tt{border-bottom:1px dotted var(--accent);color:inherit;cursor:pointer;
+  text-decoration:none;background:none;border-top:0;border-left:0;border-right:0;
+  padding:0;font:inherit}
+.tt sup{font-family:var(--sans);font-size:.62em;color:var(--accent);font-weight:700;
+  padding-left:.1em;vertical-align:super}
+.tt:hover{background:var(--accent-soft)}
+
+/* ── reply block ────────────────────────── */
+.replybox{margin-top:1.1rem;border:1px dashed var(--rule);background:var(--card);padding:.8rem .9rem}
+.replybox.has{border-style:solid;border-color:var(--done);background:var(--done-soft)}
+.rhead{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;font-family:var(--sans)}
+.rhead .lab{margin:0}
+.chip{font-family:var(--sans);font-size:.66rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;padding:.14rem .45rem;border:1px solid var(--rule);color:var(--ink-faint)}
+.chip.ok{border-color:var(--done);color:var(--done)}
+textarea{width:100%;font-family:var(--serif);font-size:.98rem;line-height:1.55;color:var(--ink);
+  background:transparent;border:0;resize:vertical;min-height:3.4rem;padding:0}
+textarea::placeholder{color:var(--ink-faint)}
+textarea:focus{outline:none}
+.notes{margin-top:.7rem;display:flex;flex-direction:column;gap:.6rem}
+.note{border-left:2px solid var(--accent);padding:.5rem .7rem;background:var(--card)}
+.note blockquote{margin:0 0 .35rem;font-size:.88rem;color:var(--ink-soft);font-style:italic}
+.note .del{float:right;font-family:var(--sans);font-size:.7rem;color:var(--ink-faint);
+  background:none;border:0;cursor:pointer;padding:0 0 0 .5rem}
+.note .del:hover{color:var(--accent)}
+mark.q{background:var(--mark);color:inherit;padding:0 .1em}
+
+/* ── floating select button ─────────────── */
+#selbtn{position:absolute;z-index:60;display:none;font-family:var(--sans);font-size:.76rem;
+  font-weight:700;background:var(--accent);color:#fff;border:0;padding:.4rem .7rem;
+  border-radius:2px;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.28)}
+
+/* ── term sheet ─────────────────────────── */
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:80;background:var(--card);
+  border-top:2px solid var(--accent);padding:1.2rem 1.25rem 1.5rem;transform:translateY(110%);
+  transition:transform .22s ease;box-shadow:0 -8px 30px rgba(0,0,0,.2)}
+#sheet.on{transform:translateY(0)}
+.sheet-in{max-width:52rem;margin:0 auto;position:relative}
+#sheet h4{margin:0 0 .3rem;font-size:1.1rem}
+#sheet p{margin:0;color:var(--ink-soft);font-size:.97rem;max-width:44rem}
+#sheet .x{position:absolute;top:-.3rem;right:0;background:none;border:0;font-size:1.3rem;
+  color:var(--ink-faint);cursor:pointer;line-height:1;font-family:var(--sans)}
+#sheet .k{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--accent);display:block;margin-bottom:.4rem}
+
+/* ── send ───────────────────────────────── */
+.send{margin:4rem 0 0;border:2px solid var(--ink);padding:1.6rem 1.5rem;background:var(--card)}
+.send h2{margin:0 0 .5rem;font-size:1.35rem}
+.send p{margin:0 0 1.1rem;color:var(--ink-soft);font-size:.97rem}
+.send .row{display:flex;gap:.6rem;flex-wrap:wrap}
+.miss{margin-top:1.1rem;font-size:.87rem;color:var(--ink-soft);font-family:var(--sans)}
+.miss a{color:var(--accent);font-family:var(--mono);font-size:.84em}
+
+/* ── glossary ───────────────────────────── */
+.gloss{margin:4rem 0 0;border-top:2px solid var(--ink);padding-top:1.6rem}
+.gloss h2{font-size:1.4rem;margin:0 0 1.2rem}
+.gloss dl{margin:0;display:grid;gap:.9rem}
+.gloss dt{font-family:var(--mono);font-size:.82rem;color:var(--accent);font-weight:600}
+.gloss dd{margin:.1rem 0 0;color:var(--ink-soft);font-size:.95rem}
+
+.nav{margin:3rem 0 0;display:flex;gap:.8rem;flex-wrap:wrap;font-family:var(--sans);font-size:.88rem}
+.nav a{color:var(--accent);text-decoration:none;border:1px solid var(--rule);padding:.5rem .8rem}
+.nav a:hover{border-color:var(--accent)}
+/* ── export modal ───────────────────────── */
+#modal{position:fixed;inset:0;z-index:100;background:rgba(10,14,20,.62);display:none;
+  align-items:center;justify-content:center;padding:1rem}
+#modal.on{display:flex}
+.mcard{background:var(--paper);border:2px solid var(--ink);max-width:44rem;width:100%;
+  max-height:88vh;display:flex;flex-direction:column;padding:1.3rem 1.4rem 1.4rem}
+.mcard h3{margin:0 0 .4rem;font-size:1.25rem}
+.mcard .lead{margin:0 0 .9rem;color:var(--ink-soft);font-size:.95rem}
+.mcard textarea.out{flex:1;min-height:12rem;background:var(--card);border:1px solid var(--rule);
+  font-family:var(--mono);font-size:.78rem;line-height:1.5;padding:.7rem .8rem;
+  white-space:pre;overflow:auto;resize:none}
+.mrow{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.9rem;align-items:center}
+.mrow a.btn{text-decoration:none;display:inline-block}
+.mnote{font-family:var(--sans);font-size:.8rem;color:var(--ink-faint);margin:.7rem 0 0}
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%) translateY(200%);
+  background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.85rem;
+  padding:.6rem 1rem;border-radius:2px;z-index:90;transition:transform .25s}
+.toast.on{transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:640px){
+  body{font-size:16px}
+  .clause{grid-template-columns:1fr;gap:.3rem}
+  .cnum{padding-top:0}
+}
+</style>
+
+
+</head>
+<body>
+<div class="top"><div class="top-in">
+  <span class="crumb">ČadcaNet · Část 2 z 2 · Monitoring sítě</span>
+  <span class="prog"><span class="bar"><i id="pbar"></i></span><span id="ptxt">0 / 0</span></span>
+  <button class="btn btn-p" id="topsend">Odeslat</button>
+</div></div>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="kicker">K odsouhlasení · návrh k připomínkám</p>
+  <h1>Monitoring: vědět o poruše dřív, než zavolá první klient</h1>
+  <p class="stand">Druhá polovina práce. Systém, který nepřetržitě sleduje všech
+  <span class="num">1 029</span> zařízení ve vaší síti, sám pozná, co je porucha, upozorní
+  správného člověka a spáruje to s výpadky proudu. Nic z toho ještě nestojí — a u několika
+  rozhodnutí potřebujeme tvůj názor dřív, než se do toho pustíme.</p>
+</header>
+
+<div class="howto">
+  <h2>Jak psát připomínky</h2>
+  <ol>
+    <li>Každé rozhodnutí má <b>číslo</b> (např. <span style="font-family:var(--mono)">NET-09</span>) a dole <b>políčko na odpověď</b>. Piš normálně, česky, klidně jednou větou.</li>
+    <li>Chceš se vyjádřit ke <b>konkrétní větě</b>? Označ ji myší (nebo prstem) a klikni na tlačítko <b>Okomentovat</b>, které vyskočí.</li>
+    <li>Slova s <b>tečkovaným podtržením</b> jsou odborné pojmy — klikni na ně a dole se vysvětlí.</li>
+    <li>Až budeš hotový (i částečně), klikni na <b>Odeslat</b> nahoře. Ukáže se hotový text, který zkopíruješ a pošleš Ladimu.</li>
+    <li>Odpovědi se ukládají v prohlížeči. <b>Tato část se odesílá zvlášť</b> od části 1 — obě prosím pošli.</li>
+  </ol>
+</div>
+
+<div class="howto" style="border-color:var(--accent)">
+  <h2>Nejdřív to podstatné</h2>
+  <p style="margin:0 0 .6rem;font-size:.95rem;color:var(--ink-soft)">Většina rozhodnutí níž je technická a stačí je vzít na vědomí. <b>O pěti z nich ale nedokážeme rozhodnout bez tebe</b>, protože jde o peníze, o práci navíc pro vaše lidi, nebo o to, jestli je systém k něčemu:</p>
+  <ol style="margin:0;padding-left:1.2rem;font-size:.95rem;color:var(--ink-soft)">
+    <li><a href="#NET-09" style="color:var(--accent)">NET-09</a> — neseskupujeme poruchy podle bodu sítě, dokud nemáme důkaz. Znamená to víc řádků na obrazovce.</li>
+    <li><a href="#NET-17" style="color:var(--accent)">NET-17</a> — porucha si sama založí úkol. Tvoje rozhodnutí, my jsme byli proti.</li>
+    <li><a href="#NET-20" style="color:var(--accent)">NET-20</a> — chybí <span style="font-family:var(--mono)">149</span> kódů odběrných míst. Bez nich nefunguje celé párování na výpadky proudu.</li>
+    <li><a href="#NET-24" style="color:var(--accent)">NET-24</a> — historie měření ze starého systému se <b>nepřenese</b>. Nenávratně.</li>
+    <li><a href="#NET-25" style="color:var(--accent)">NET-25</a> — u bodů sítě známe příjmy, ale <b>nulové náklady</b>. Někdo je musí zadat.</li>
+  </ol>
+</div>
+
+<section class="grp">
+  <span class="gtag">Oddíl A</span>
+  <h2>Jak se data budou sbírat</h2>
+  <p class="gsub">Základní tvar. Tohle jsi nám v podstatě nadiktoval ty a my z toho udělali
+  závazné pravidlo — potřebujeme potvrdit, že jsme tě pochopili správně.</p>
+
+<article class="clause" id="NET-01" data-q="Potvrzuješ pravidlo: sonda u vás jen sbírá a nikdy neztratí data, rozhoduje výhradně centrála?">
+  <div class="cnum">NET-01</div><div class="cbody">
+  <h3>Sonda u vás jen měří a nikdy neztratí data. Rozhoduje výhradně centrála</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Rozdělení práce je pevně dané a nic ho nesmí porušit:</p>
+  <ul>
+    <li><b><a class="tt" data-t="sonda">Sonda</a> u vás v síti</b> obchází zařízení a měří.
+    Když spadne spojení do cloudu, <b>měří dál</b> a ukládá si výsledky
+    <a class="tt" data-t="buffer">k sobě na disk</a>. <b>Nikdy sama nerozhodne, že je něco
+    porucha, a nikdy sama nikomu nevolá.</b></li>
+    <li><b><a class="tt" data-t="centrala">Centrála</a></b> je jediné místo, kde se rozhoduje
+    „tohle je porucha" a odkud odchází upozornění.</li>
+    <li><b>Po obnovení spojení</b> sonda dopošle zbytek dat, a nesmí se stát, že se něco
+    započítá dvakrát.</li>
+    <li><b>Stará data neposílají poplach.</b> Když se po pěti hodinách dorovná historie,
+    centrála počká, až dojede celá, a teprve pak se podívá na <b>současný stav</b>.
+    Neupozorňuje na každý starý vzorek zvlášť.</li>
+  </ul></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Přesně kvůli tomu, cos popsal: když se nasazuje nová verze, migruje se, nebo spadne
+  internet, systém <b>nesmí přestat vidět</b> a nesmí zapomenout. A zároveň nechceš, aby ti
+  po obnovení spojení přišlo 300 zpráv o poruchách, které už dávno skončily.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Tohle je nejdražší část celého návrhu z hlediska programování a zároveň ta, kterou nekoupíš —
+  proto NET-02. Cena je v tom, že sonda musí být hloupá a spolehlivá zároveň.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Sedí to? A jak dlouho reálně trvá nejdelší výpadek spojení, se kterým musíme počítat —
+  hodiny, nebo dny? Podle toho se dimenzuje disk sondy.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-02" data-q="Souhlasíš s tím, že si monitoring napíšeme sami místo nasazení hotového Zabbixu?">
+  <div class="cnum">NET-02</div><div class="cbody">
+  <h3>Napíšeme si to sami, hotový systém nepoužijeme</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Prošli jsme pět hotových monitorovacích systémů (<a class="tt" data-t="zabbix">Zabbix</a>,
+  Telegraf, Prometheus, LibreNMS, Netdata) a žádný nenasadíme. Napíšeme si vlastní sondu
+  a vlastní vyhodnocování — ale <b>z hotových, ověřených dílů</b>, ne od nuly.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Rozhodl o tom rozpor s pravidlem NET-01. Zabbix jako jediný umí to ukládání dat při výpadku
+  spojení pořádně — jenže je pevně svázaný se svým vlastním mozkem, který si <b>chce</b>
+  rozhodovat o poruchách sám. Museli bychom mu tu část vypnout, přidat další server do řetězu
+  a stejně by nám data tekla oklikou. Ostatní kandidáti padli na tom, že buď neumí přežít
+  dlouhý výpadek spojení (Prometheus zvládne dvě hodiny), nebo jsou to zavřené celky.
+  Telegraf uměl skoro všechno, ale právě to ukládání při výpadku má slabé — takže bychom
+  stejně museli napsat tu nejtěžší část sami.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Víc práce na začátku, žádná licence a systém, který dělá přesně to, co potřebuješ.
+  Riziko: je to náš kód, takže když se rozbije, opravujeme ho my — není za kým jít.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Bereš to riziko? Alternativa je nasadit Zabbix tak, jak je, žít s jeho vlastním způsobem
+  hlášení poruch a rezignovat na propojení s kartou klienta a s telefony.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-03" data-q="Souhlasíš s měřením každou minutu místo dnešních pěti minut?">
+  <div class="cnum">NET-03</div><div class="cbody">
+  <h3>Měří se každou minutu, ne každých pět minut jako dnes</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Každé zařízení se testuje <b>jednou za minutu</b>, vždy deseti
+  <a class="tt" data-t="ping">pingy</a>. Napevno — žádné „když je zle, měř častěji".</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Tvůj dnešní systém měří každých pět minut a zrychlí, až když je něco úplně mrtvé.
+  S pětiminutovým odstupem se ale nedá spolehlivě říct „bylo to dole tři minuty" — chybí data.
+  A deset pingů dává rozlišení po deseti procentech, takže se dá poznat i zhoršená linka,
+  ne jen mrtvá. <b>Jemnost měření je jediná věc, která se nedá dopočítat zpětně</b> — všechno
+  ostatní se z uložených dat dá přepočítat znovu, tohle ne.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Pětkrát víc dat než dnes. Spočítali jsme to: <b>celý rok</b> podrobných měření zabere
+  zhruba <span class="num">3,5 GB</span> po zkomprimování. To je zanedbatelné.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Není měření každou minutu zbytečně časté? Ptáme se hlavně kvůli tomu, jestli to nezatíží slabší
+  zařízení na koncích sítě — ta znáš líp než my.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-04" data-q="Kolik sond nasadit? Technicky stačí jedna, my doporučujeme jednu na lokalitu. Jak je vaše síť rozdělená?">
+  <div class="cnum">NET-04</div><div class="cbody">
+  <h3>Sond bude víc než jedna, i když by technicky stačila jedna</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Jedna sonda zvládne <b><span class="num">1 000–1 500</span> zařízení</b> při měření po minutě.
+  Ty máš <span class="num">1 029</span> zařízení — takže výkonem by stačila jedna.
+  Přesto doporučujeme <b>víc sond, zhruba jednu na lokalitu</b>, plus jednu navíc jako zálohu.
+  Sonda je jeden soubor napsaný v <a class="tt" data-t="go">Go</a>; přidat další znamená
+  zkopírovat ho jinam a spustit.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Ne kvůli výkonu, ale kvůli třem věcem: <b>dosahu</b> (na některá zařízení je lepší se
+  dívat zblízka), <b>izolaci poruch</b> (když vypadne jedna lokalita, ostatní se měří dál)
+  a <b>klidu při zásahu</b> (dá se jedna vypnout a druhá měří dál). Sondy se hlásí centrále
+  přes <a class="tt" data-t="mtls">ověřené spojení</a> a ta jim sama rozdělí, kdo co měří —
+  při přidání další se přesune jen malá část, ne všechno.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Sonda potřebuje malý server nebo virtuální server — <span class="num">4</span> jádra,
+  <span class="num">8 GB</span> paměti, <span class="num">5–10 GB</span> místa na disku
+  pro data při výpadku spojení (to vydrží dny až týdny).</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Jak je síť rozdělená na lokality, které spolu <b>nepadají zároveň</b>? A máš na nich
+  místo, kam takový malý server postavit — nebo to má běžet centrálně?</p></div>
+  </div>
+</article>
+</section>
+
+<section class="grp">
+  <span class="gtag">Oddíl B</span>
+  <h2>Kdy je to porucha a kdy jen ticho</h2>
+  <p class="gsub">Nejjemnější část. Rozdíl mezi „nefunguje to" a „nevíme, jestli to funguje"
+  je to, co odděluje užitečný systém od systému, který lidé po měsíci přestanou číst.</p>
+
+<article class="clause" id="NET-05" data-q="Souhlasíš, že se rozlišují čtyři stavy a poruchu zakládá jen skutečné neodpovídání?">
+  <div class="cnum">NET-05</div><div class="cbody">
+  <h3>Čtyři stavy místo dvou — a poruchu zakládá jen jeden z nich</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Zařízení není jen „jede / nejede". Rozlišujeme čtyři situace pojmenované podle toho,
+  <b>co skutečně víme</b>:</p>
+  <ul>
+    <li><b>jede</b> — odpovídá.</li>
+    <li><b>neodpovídá</b> — měříme ho a mlčí. <b>Jen tohle otevírá poruchu.</b></li>
+    <li><b>nemáme data</b> — neměří ho nikdo (spadla sonda, nedojela data). Nevíme nic.</li>
+    <li><b>nedostupné</b> — mlčí, ale je to proto, že je nad ním
+    <a class="tt" data-t="uplink">nadřazené zařízení</a>, které neodpovídá. Pravděpodobně
+    je v pořádku, jen se k němu nedá dostat.</li>
+  </ul></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Váš dnešní systém tyhle situace míchá a tím vzniká záplava hlášek. Když spadne vysílač,
+  pod kterým visí padesát klientů, nezajímá vás padesát poruch — zajímá vás jedna, ta na vysílači.
+  A když se rozbije měření, je zásadní rozdíl mezi „je to rozbité" a „nevíme" — protože
+  ve druhém případě je špatně sledování, ne síť.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Na obrazovce jsou vidět všechny čtyři stavy zvlášť, ale <b>volá se jen kvůli
+  „neodpovídá"</b>.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Dává to smysl v řeči, jakou používáš s kolegy? Jestli tomu říkáte jinak, řekni, jak —
+  budou to nadpisy na obrazovce, kterou budou vaši lidé číst denně.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-06" data-q="Jsou prodlevy správné: 3 minuty než se ohlásí porucha, 1 minuta než se ohlásí návrat?">
+  <div class="cnum">NET-06</div><div class="cbody">
+  <h3>Porucha se hlásí po 3 minutách, návrat po 1 minutě</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Zařízení musí mlčet <b>plné tři minuty</b>, než to systém prohlásí za poruchu.
+  A stačí mu <b>jedna minuta</b> odpovídání, aby ji uzavřel. Ty doby jsou schválně různé.
+  Do záznamu se přitom zapíše <b>skutečný čas</b>, kdy to spadlo — ne čas, kdy jsme to
+  uznali.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Kratší prodleva by hlásila každý restart routeru a každé krátké zakolísání — po týdnu
+  by to nikdo nečetl. Delší prodleva by znamenala, že se o poruše dozvíš později než od
+  klienta, což je celý smysl toho systému. Návrat je rychlejší schválně: když už to jede,
+  není důvod čekat.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Poruchy kratší než tři minuty systém <b>neohlásí</b>. Data o nich má, takže se dají
+  dohledat zpětně, ale nikdo kvůli nim nedostane zprávu.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Sedí ty tři minuty? Kdyby ti vadilo, že „krátké výpadky nikdo neřeší", dá se to
+  zkrátit — jen se to zaplatí větším počtem falešných poplachů.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-07" data-q="Souhlasíš, že když měření chybí, systém řekne „nevíme“ a NEohlásí to jako poruchu?">
+  <div class="cnum">NET-07</div><div class="cbody">
+  <h3>Když data chybí, systém řekne „nevíme" — nikdy „porucha"</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Když v datech není nic — protože spadla sonda, spojení nebo server — systém to
+  <b>nikdy</b> nevyhodnotí jako poruchu. Označí to jako „nemáme data" a ohlásí, že
+  <b>sledování nefunguje</b>, což je jiný problém a řeší ho jiný člověk.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Kdyby chybějící data znamenala poruchu, jeden výpadek našeho serveru by vygeneroval
+  <span class="num">1 029</span> falešných poruch a rozeslal o nich SMS. Opačná chyba —
+  brát ticho jako „všechno v pořádku" — je ještě horší, protože nefunkční sledování vypadá
+  jako klidná noc.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Na obrazovce je pruh, který říká, kolik zařízení právě neměříme. Když je nenulový,
+  ví se, že přehled není úplný.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Kdo má být upozorněn, když spadne samo sledování — ten samý člověk jako u poruch sítě,
+  nebo někdo jiný?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-08" data-q="Bereš na vědomí, že potlačení lavin hlášek funguje jen u 36 % zařízení, dokud se nedoplní data?">
+  <div class="cnum">NET-08</div><div class="cbody">
+  <h3>Potlačení laviny hlášek funguje zatím jen u třetiny zařízení</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Systém umí poznat, že zařízení mlčí <b>jen proto</b>, že je pod nefunkčním nadřazeným
+  bodem — pak ho neoznačí za poruchu, ale za „nedostupné" a nikoho neobtěžuje. Funguje to
+  ale jen tam, kde je v datech zapsáno, co pod čím visí. <b>A to je u <span class="num">371</span>
+  z <span class="num">1 029</span> zařízení, tedy 36 %.</b> U zbylých
+  <span class="num">655</span> to zapsané není nebo je to rozbité.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Zvažovali jsme, že bychom to obešli — když spadne deset zařízení naráz na jednom místě,
+  seskupit je i bez důkazu. Odmítli jsme to (viz NET-09), protože by systém tvrdil něco,
+  co neví. Místo toho jsme přiznali, že to bude hlučnější, a zastropovali počet zpráv (NET-16).</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Dokud se ta vazba nedoplní, bude při větší poruše na obrazovce víc řádků, než by muselo být.
+  <b>Doplnění těch <span class="num">655</span> vazeb je nejlevnější způsob, jak systém udělat
+  tišší</b> — je to práce pro člověka, který zná síť, ne pro programátora.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Existuje někde — třeba i v hlavě nebo v tabulce — přehled, co pod čím visí? A je někdo,
+  kdo by to během pár dnů doplnil?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-09" data-q="Potvrzuješ své rozhodnutí neseskupovat poruchy podle bodu sítě bez důkazu, i za cenu více řádků na obrazovce?">
+  <div class="cnum">NET-09</div><div class="cbody">
+  <h3 style="color:var(--accent)">Poruchy se seskupují jen tam, kde máme důkaz o příčině</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Když spadne pět zařízení na jednom bodě sítě a my <b>nevíme proč</b>, systém ukáže
+  <b>pět poruch</b> — ne jednu s nadpisem „problém na bodě X". Sloučí je do jednoho
+  <a class="tt" data-t="incident">incidentu</a> jen ve dvou případech: když je na tom místě
+  <b>doložený výpadek proudu</b> od distributora, nebo když je jasné, které nadřazené
+  zařízení je příčinou.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p><b>Tohle jsi rozhodl ty</b>, když jsme ti návrh ukazovali — a my ho pak dodrželi
+  i tam, kde to bolelo. Argument byl, že když systém napíše „porucha na bodě X" bez důvodu,
+  člověk tomu uvěří a jde hledat problém tam, kde možná žádný není. Pět nevysvětlených
+  poruch je nepohodlná pravda; jedna vymyšlená příčina je pohodlná lež. Ověřovali jsme si to
+  i u velkých systémů (Dynatrace, Prometheus) — dělají to stejně.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Obrazovka bude při větší poruše delší, obzvlášť dokud platí NET-08. Kompenzujeme to tím,
+  že u řádku je vidět <b>„za tímhle je 50 dalších nedostupných"</b> jako informace, ne jako
+  tvrzení o příčině — a že se počet zpráv stropuje.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Trváš na tom i s vědomím ceny? Odpověz prosím výslovně — založili jsme na tom podobu
+  celé hlavní obrazovky a její změna později je drahá.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-10" data-q="Souhlasíš, že při plošném výpadku (>40 % zařízení) přijde jen JEDNA zpráva místo stovek?">
+  <div class="cnum">NET-10</div><div class="cbody">
+  <h3>Když spadne všechno, přijde jedna zpráva — ne tisíc</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Když najednou přestane odpovídat <b>víc než 40 % zařízení</b> a zároveň jich je
+  <b>aspoň 20</b>, systém to vyhodnotí jako plošný problém: založí <b>jediný</b> incident,
+  zobrazí nahoře na obrazovce pruh „omezený režim" a pošle <b>právě jednu</b> zprávu.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Když spadne páteř nebo náš vlastní server, není chyba u tisíce zařízení — chyba je jedna.
+  Váš dnešní systém má obdobnou pojistku, takže to není novinka. Podstatné je, že
+  <b>ticho není totéž co „je dobře"</b>: proto se pošle jedna zpráva a pruh zůstane svítit,
+  místo aby systém prostě zmlkl.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Jednotlivé poruchy jsou pod pruhem pořád vypsané. Jen se kvůli nim nevolá.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Je 40 % rozumná hranice? Máš v síti bod, jehož výpadek shodí většinu sítě a je to
+  „normální" — třeba jeden hlavní přívod?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-11" data-q="Souhlasíš s trojicí akcí Potvrdit / Odložit / Uzavřít a se čtyřmi stupni závažnosti podle počtu klientů (100/25/5)?">
+  <div class="cnum">NET-11</div><div class="cbody">
+  <h3>Tři tlačítka u poruchy a čtyři stupně důležitosti podle počtu klientů</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>U každé poruchy jsou tři akce: <b><a class="tt" data-t="ack">Potvrdit</a></b> („vidím to,
+  dělám na tom" — přestane připomínat, ale po 4 hodinách se ozve znovu, když to pořád trvá),
+  <b>Odložit</b> a <b>Uzavřít</b> (definitivní; když se to pak rozbije znovu, vznikne
+  <b>nová</b> porucha, ne pokračování staré). Důležitost má čtyři stupně a počítá se
+  podle toho, <b>kolik klientů je za tím</b>: přes <span class="num">100</span>,
+  přes <span class="num">25</span>, přes <span class="num">5</span> a pod tím.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Očekávaná reakce na „pořád je to rozbité, ale řešíme to" je <b>potvrdit</b>, ne uzavřít.
+  Kdyby se místo toho zavíralo, přehled by lhal. Stupnice podle počtu klientů je jediná
+  míra, která tady dává smysl — vztažená k vašim číslům: <span class="num">1 992</span>
+  aktivních klientů na <span class="num">149</span> bodech sítě.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Potvrzení „vyprší" po čtyřech hodinách schválně — aby se na otevřené poruše nedalo
+  zapomenout tím, že ji někdo umlčel.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Jsou ty hranice 100 / 25 / 5 klientů správné? Od kolika postižených klientů se u vás
+  začíná zvedat telefon a jezdit ven?</p></div>
+  </div>
+</article>
+</section>
+
+<section class="grp">
+  <span class="gtag">Oddíl C</span>
+  <h2>Kdo se o poruše dozví a jak</h2>
+  <p class="gsub">Systém, který upozorňuje moc, se vypne. Systém, který neupozorňuje,
+  je k ničemu. Tenhle oddíl je celý o hledání té hranice.</p>
+
+<article class="clause" id="NET-12" data-q="Potvrzuješ, že monitoring nikdy nic neposílá klientům — jen vašim lidem?">
+  <div class="cnum">NET-12</div><div class="cbody">
+  <h3>Monitoring píše jen vašim lidem. Klientům nikdy nic neodešle</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Upozornění na poruchy chodí <b>výhradně interně</b> — vám a technikům. Systém sám od sebe
+  <b>nikdy</b> nepošle nic klientovi.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Falešný poplach rozeslaný třem stovkám klientů způsobí škodu, kterou nejde vzít zpět, a stane
+  se přesně ve chvíli, kdy je systém rozbitý. Když klient zavolá, operátorka mu o výpadku řekne
+  z karty (NET-21) — to je bezpečné, protože mezi systémem a klientem stojí člověk.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Zpráva „už vám to jede" po opravě je samostatná věc, kterou spouští technik ručně a
+  monitoring ji jen hlídá — řeší se zvlášť (viz TEL-22 v části 1).</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Souhlasíš? Nebo chceš, aby při velkém výpadku odešla klientům zpráva automaticky —
+  a pokud ano, od jaké velikosti a kdo za to nese odpovědnost?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-13" data-q="Schvaluješ e-mail + SMS přes SES Frankfurt, Twilio Dublin a healthchecks.io — dohromady zhruba 23 $ měsíčně?">
+  <div class="cnum">NET-13</div><div class="cbody">
+  <h3>Upozorňuje se e-mailem a SMS, zhruba za 23 dolarů měsíčně</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Tři dodavatelé, každý schválně od jiné firmy:
+  <b><a class="tt" data-t="ses">Amazon SES</a> Frankfurt</b> na e-maily (~<span class="num">0,90 $</span>/měs),
+  <b><a class="tt" data-t="twilio">Twilio</a> Dublin</b> na SMS (~<span class="num">1,94 $</span>/měs,
+  bez pronájmu čísla — jako odesílatel se ukáže jméno firmy) a
+  <b>healthchecks.io</b> jako <a class="tt" data-t="deadman">nezávislý hlídač</a>
+  (<span class="num">20 $</span>/měs).</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Vybírali jsme podle dvou věcí: data musí zůstat v EU, a e-mail a SMS <b>nesmějí přestat fungovat
+  zároveň</b>. Kdybychom vzali jednu firmu na obojí, ztratili bychom zálohu, protože obě cesty
+  by padly společně. Příjemný nález: <b>Slovensko jako jedna z mála zemí nevyžaduje registraci
+  jména odesílatele SMS</b> — potvrdili to tři nezávislí operátoři, takže odpadá obvyklá
+  několikatýdenní byrokracie. Zvažovali jsme i krabici se SIM kartou u vás, ale zamítli jsme ji:
+  sdílela by proud a připojení s tím, na co má upozorňovat, a umí selhat potichu
+  (propadlá SIM, došlý kredit).</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>SMS se platí za kus; při běžném provozu jsou to jednotky eur. Doména pro odesílání
+  se musí nastavit tak, aby zprávy nekončily ve spamu.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Bereš ~<span class="num">23 $</span> měsíčně? A jaké jméno má být na SMS jako odesílatel
+  (max. 11 znaků bez diakritiky)?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-14" data-q="Souhlasíš, že mimo 8–17 Po–Pá se v noci budí jen kvůli nejvyšší závažnosti a zbytek přijde ráno v 8 souhrnem?">
+  <div class="cnum">NET-14</div><div class="cbody">
+  <h3>V noci se volá jen kvůli tomu nejhoršímu, zbytek přijde ráno v 8</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Pracovní okno pro upozorňování je <b>pondělí–pátek 08:00–17:00</b>. Mimo něj projde jen
+  <b>nejvyšší stupeň</b> závažnosti; všechno ostatní se odloží a přijde <b>ráno v 8:00
+  v jednom souhrnu</b> — včetně víkendů. Není to ztišení: je to odklad.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Tohle je jediné místo, kde ta čtyřstupňová závažnost (NET-11) opravdu něco dělá.
+  Bez nočního filtru se stane jediná věc: po dvou týdnech si všichni vypnou zvonění a systém
+  je k ničemu. Pozor — <b>tohle číslo je nastavené pro Slovensko a pro Česko bude jiné</b>.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>V praxi to znamená, že o půl třetí v noci zazvoní telefon jen kvůli poruše, která
+  odstavila přes sto klientů. Menší věci počkají do rána.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Chceš být v noci buzený, nebo ne? A pokud ano — ty osobně, nebo služba, která se střídá?
+  Řekni to co nejkonkrétněji, tohle se špatně hádá.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-15" data-q="Souhlasíš, že se příjemci upozornění zadávají ručně do seznamu a neodvozují se z oprávnění v systému?">
+  <div class="cnum">NET-15</div><div class="cbody">
+  <h3>Komu se volá, se zadává ručně — neodvozuje se to z oprávnění</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Existuje <b>seznam příjemců</b>, kde je u každého napsáno, jakým způsobem má být upozorněn (e-mail/SMS),
+  od jaké závažnosti, a jestli ho to smí budit v noci. Do seznamu se dá zapsat i <b>samotné
+  číslo nebo adresa</b> — třeba služební telefon, který koluje mezi techniky — nemusí to být
+  účet v systému.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Aby se nikdy nestalo, že někdo dostane právo <b>vidět</b> síť a tím pádem mu <b>začne
+  zvonit telefon</b> ve tři ráno. To jsou dvě různá rozhodnutí a mají zůstat oddělená.
+  Zvažovali jsme automatické „ke každému bodu sítě jeho technik", ale u vás to nejde:
+  v datech <b>není u žádného z 1 029 zařízení vyplněná role ani uvedený majitel</b>.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Když někdo odejde nebo nastoupí, seznam se musí ručně upravit. Zato se nikdy nikomu
+  nezačne volat omylem.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Kdo má být v tom seznamu na začátku — jména a kanály? Stačí to nahrubo.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-16" data-q="Souhlasíš se stropem 3 zpráv na bod sítě za 15 minut a opakováním po 4 hodinách, dokud se porucha nepotvrdí?">
+  <div class="cnum">NET-16</div><div class="cbody">
+  <h3>Nejvýš tři zprávy z jednoho místa za čtvrt hodiny; pak se připomíná po 4 hodinách</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Z jednoho bodu sítě odejdou nejvýš <b>tři zprávy za 15 minut</b>. Co se do stropu nevejde,
+  se shrne do jedné souhrnné zprávy, která nese <b>nejvyšší</b> ze zadržených závažností —
+  strop tedy <b>nemá výjimku</b> ani pro nejhorší poruchu, jen se přes něj nese informace.
+  Dokud porucha trvá a nikdo ji <a class="tt" data-t="ack">nepotvrdí</a>, připomene se
+  <b>každé 4 hodiny</b>. Po opravě přijde jedna zpráva „vyřešeno" a jen těm, komu přišlo
+  to původní upozornění.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Strop je přímý důsledek NET-08: dokud u dvou třetin zařízení nevíme, co pod čím visí,
+  jeden spadlý vysílač vygeneruje desítky samostatných poruch. Buď je slučovat na základě domněnek
+  (odmítnuto v NET-09), nebo přiznat pravdu a zastropovat počet zpráv. Vybrali jsme druhé.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Při velké poruše dostaneš tři zprávy a pak souhrn — ne třicet. Na obrazovce je vidět
+  všechno.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Jsou tři zprávy za čtvrt hodiny rozumné? A není připomínka po 4 hodinách příliš řídká
+  na noční poruchu?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-17" data-q="Potvrzuješ své rozhodnutí, že porucha si má sama založit úkol? My jsme byli proti — chceme vědět, jestli na tom trváš.">
+  <div class="cnum">NET-17</div><div class="cbody">
+  <h3 style="color:var(--accent)">Porucha si sama založí úkol — tvoje rozhodnutí, my jsme byli proti</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Když porucha souvisí s <b>výpadkem proudu</b> nebo má aspoň <b>třetí stupeň</b> závažnosti,
+  systém k ní <b>sám založí úkol</b>. Aby z toho nebyl odpad, je tam prodleva: nejvyšší stupeň
+  hned, ostatní jen pokud porucha trvá i po <b>15 minutách</b>. Po opravě se do úkolu zapíše
+  výsledek a úkol se <b>sám uzavře — ale jen když se ho nikdo nedotkl</b>.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p><b>Doporučovali jsme opak</b>: u telefonů jsme se dohodli, že úkol vzniká jen tehdy,
+  když ho člověk potvrdí (TEL-08), přesně proto, aby se historie klienta nezaplnila
+  automatickými řádky. Ty jsi řekl, že u poruch to chceš jinak — že porucha bez úkolu
+  se ztratí. Přijali jsme to a zabudovali brzdy (prodleva, samouzavření).</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Bude to znamenat víc úkolů. Kolik přesně, závisí na tom, jak často máš poruchy nad
+  třetím stupněm — což zatím nevíme, protože to nikdo neměřil.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Trváš na tom? Kdyby se ukázalo, že to dělá moc úkolů, je nejjednodušší brzda posunout
+  hranici z „třetí stupeň" na „jen výpadky proudu a to nejhorší". Chceš to nastavit rovnou
+  takhle, nebo to zkusíme naostro?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-18" data-q="Souhlasíš s externím hlídačem za 20 $/měs, který se ozve, když spadne celý náš systém?">
+  <div class="cnum">NET-18</div><div class="cbody">
+  <h3>Hlídač mimo náš systém, který se ozve, když spadne všechno</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Použijeme cizí službu, které se náš systém pravidelně hlásí „žiju". Když se dvakrát neozve,
+  <b>ona zavolá tobě</b>. K tomu jednou denně chodí kontrolní e-mail „hlídání funguje"
+  a u nejvyšší závažnosti platí, že když selže e-mail, zkusí se SMS.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Všechno ostatní v tomhle dokumentu selže tiše, když spadne náš server: nikdo neupozorní,
+  protože upozorňování je součást toho, co spadlo. Tohle je jediná část návrhu, která
+  <b>musí</b> běžet mimo naši infrastrukturu — kdybychom si ji hostovali sami, hlídala by
+  sama sebe a byla by k ničemu.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p><span class="num">20 $</span> měsíčně, tedy většina nákladu z NET-13. Bezplatná varianta
+  neumí volat ani psát SMS, takže by v okamžiku, kdy má být užitečná, nic neudělala.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Bereš to? Je to zdaleka nejlepší poměr cena/přínos z celého návrhu — a zároveň to jediné,
+  co odhalí, že ti celý monitoring přestal fungovat.</p></div>
+  </div>
+</article>
+</section>
+
+<section class="grp">
+  <span class="gtag">Oddíl D</span>
+  <h2>Výpadky proudu a co uvidí operátorka u klienta</h2>
+  <p class="gsub">Tady se monitoring potkává s telefonem a s kartou klienta — a taky tady
+  je největší díra v datech.</p>
+
+<article class="clause" id="NET-19" data-q="Souhlasíš, abychom automaticky stahovali hlášené výpadky proudu od distributorů a párovali je s vašimi body sítě?">
+  <div class="cnum">NET-19</div><div class="cbody">
+  <h3>Výpadky proudu si budeme tahat od distributorů sami</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Ověřili jsme naživo, že <a class="tt" data-t="distributor">ZSD i VSD</a> zveřejňují
+  poruchy a plánované odstávky způsobem, který se dá číst automaticky, a jejich podmínky to
+  dovolují. Budeme se ptát jednou za jednu až pět minut a párovat je s tvými body sítě podle
+  <a class="tt" data-t="eic">kódu odběrného místa</a>, případně podle GPS na
+  <span class="num">75</span> metrů. <b>SSD</b> to takhle nezveřejňuje — na jejich území lze
+  odebírat jen <b>plánované</b> odstávky e-mailem; neplánované zůstanou na telefonu.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Rozdíl mezi „nevíme proč to spadlo" a „ve Skalitém nejde od 14:20 proud, obnova do 17:00"
+  je rozdíl mezi vysláním technika a jedním telefonátem. Systém z toho umí tři různé věci:
+  spadl proud a je to dole → zpráva rovnou s údaji od distributora; spadl proud a <b>zařízení
+  pořád jedou</b> → jen informace, <b>bod sítě běží na baterii</b> (to je nejcennější minuta,
+  jakou ti systém kdy dá); <b>plánovaná</b> odstávka → předem se sám umlčí, aby nevolal kvůli
+  něčemu, o čem se ví.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Bez lidského zásahu to nefunguje — viz NET-20. A pozor: klíč, podle kterého se to páruje,
+  se jmenuje <b>EIC</b>, ne EAN, i když ta kolonka v databázi je dnes pojmenovaná špatně.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Kolik bodů sítě má <b>záložní baterii</b>, a na jak dlouho? To rozhoduje o tom, jestli
+  je hlášení „běží na baterii" k něčemu, nebo je to kuriozita.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-20" data-q="Kdo a do kdy může doplnit 149 kódů odběrných míst (EIC)? Bez nich je párování na výpadky proudu mrtvé.">
+  <div class="cnum">NET-20</div><div class="cbody">
+  <h3 style="color:var(--accent)">Chybí <span class="num">149</span> kódů odběrných míst — a bez nich to celé stojí</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Nic jsme nerozhodli — jen jsme naměřili, jak to je. Ze
+  <b><span class="num">149</span> bodů sítě má vyplněný kód odběrného místa
+  <span class="num">0</span></b>. Stejně tak <span class="num">0</span> má vyplněného
+  distributora a <span class="num">0</span> měsíční náklady. Souřadnice má naopak
+  <b>všech <span class="num">149</span></b>.</p></div>
+  <div class="field"><span class="lab">Proč to vadí</span>
+  <p>Protože výpadek proudu je <b>jediná příčina, kterou systém umí prokázat</b> (NET-09).
+  Dokud nejsou kódy zadané, platí tohle všechno najednou: každá porucha zůstane samostatná,
+  žádná zpráva nebude umět říct „je to proudem", plánované odstávky systém neumlčí a na kartě
+  klienta nebude fungovat pravidlo o výpadku proudu. <b>Celá vrstva „proč to spadlo" je do té
+  doby mrtvá.</b></p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Dobrá zpráva: souřadnice máme u všech, takže párování podle polohy do vzdálenosti 75 metrů bude
+  fungovat mezitím jako náhrada. Není to ale spolehlivé tam, kde je víc odběrných míst blízko
+  sebe. Kódy najdeš <b>na faktuře za elektřinu</b> u každého odběrného místa — začínají
+  na <span class="num">24Z</span>.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p><b>Kdo to může přepsat a do kdy?</b> Je to <span class="num">149</span> řádků z faktur.
+  Je to zdaleka nejlevnější věc v celém dokumentu, která odemkne nejvíc funkcí —
+  a je to práce pro člověka od vás, ne pro nás.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-21" data-q="Souhlasíš se čtyřmi pravidly na kartě klienta a hlavně s tím čtvrtým („na tomto bodě sítě je něco dole, ale u toho klienta to nemáme potvrzené“)?">
+  <div class="cnum">NET-21</div><div class="cbody">
+  <h3>Na kartě klienta: čtyři pravidla a dvě míry jistoty</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Když operátorce naskočí karta klienta, systém se ptá v tomhle pořadí:</p>
+  <ul>
+    <li><b>1.</b> Má jeho zařízení otevřenou poruchu?</li>
+    <li><b>2.</b> Je jeho zařízení nedostupné, protože je nad ním něco nefunkčního?
+    → ukáže se <b>ta nadřazená porucha</b>. (Tohle je ten nejčastější případ — anténa
+    u klienta sama poruchu nehlásí, protože se k ní nedá dostat.)</li>
+    <li><b>3.</b> Je na jeho bodě sítě výpadek proudu?</li>
+    <li><b>4.</b> Je na jeho bodě sítě dole <b>jakékoli</b> zařízení?</li>
+  </ul>
+  <p style="margin-top:.4rem">První tři se zobrazí <b>jako tvrzení</b> („Tento klient je
+  postižen výpadkem…"). Čtvrté <b>záměrně opatrně</b>: „na tomto bodě sítě jsou 3 zařízení
+  mimo provoz — <b>u tohoto klienta to není potvrzené</b>."</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>To čtvrté pravidlo <b>porušuje</b> zásadu z NET-09 — a je to schválně. Rozdíl je v tom,
+  co se s tím dělá: NET-09 zakazuje <b>vymýšlet poruchu</b> do systému, kdežto tady systém
+  nic nevymýšlí, jen operátorce <b>napoví</b>. Formulace je klíčová: musí se dát přečíst
+  nahlas do telefonu, aniž by cokoliv slíbila.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Po opravě widget nezmizí hned: <b>4 hodiny</b> zůstane výrazný a s větou
+  „obnoveno před 32 minutami — zeptej se, jestli si sám něco nepřenastavil", pak
+  <b>24 hodin</b> jako jeden tichý řádek. Důvod je čistě praktický: klient si během výpadku
+  přehází kabely a volá až druhý den, kdy je porucha dávno pryč.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Sedí ta formulace „obnoveno, zeptej se, jestli si něco nepřenastavil"? A jsou 4 hodiny
+  nahlas / 24 hodin potichu rozumné, nebo to protáhnout?</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-22" data-q="Souhlasíš, že u ~320 klientů systém řekne „nevíme“ místo „žádný výpadek“?">
+  <div class="cnum">NET-22</div><div class="cbody">
+  <h3>U zhruba <span class="num">320</span> klientů řekne systém „nevíme"</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Naměřili jsme, jak dobře jsou klienti propojeni se zařízeními: z
+  <span class="num">3 018</span> klientů s aktivní službou se podaří dohledat zařízení
+  u <b>89 %</b> a bod sítě u <b>88 %</b>. U zbylých zhruba <b><span class="num">320</span></b>
+  napíše karta výslovně <b>„nedokážeme určit"</b> — nikdy ne prázdno a nikdy ne
+  „žádné výpadky".</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Napsat „žádné výpadky" tam, kde ve skutečnosti nevíme, je nejhorší možná varianta:
+  operátorka to přečte klientovi ve chvíli, kdy si stěžuje, že mu nic nejde.
+  Radši ať systém přizná, že neví.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Těch 320 klientů se dá doplnit stejnou ruční prací jako NET-08 a NET-20 — jde o to
+  přiřadit klientovi zařízení, ke kterému je připojený.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Je 88 % dost na to, aby se s tím dalo pracovat? A stojí za to těch 320 dohledat,
+  nebo je to zbytek, se kterým se dá žít?</p></div>
+  </div>
+</article>
+</section>
+
+<section class="grp">
+  <span class="gtag">Oddíl E</span>
+  <h2>Obrazovky, grafy a ekonomika bodů sítě</h2>
+  <p class="gsub">Co z toho reálně uvidíš ty a co technici — a jedna nepříjemná zpráva
+  o historii.</p>
+
+<article class="clause" id="NET-23" data-q="Souhlasíš, že hlavní obrazovka bude seřazený seznam poruch podle důležitosti, a ne mapa sítě?">
+  <div class="cnum">NET-23</div><div class="cbody">
+  <h3>Hlavní obrazovka je seznam k odbavení, ne mapa sítě</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Postavili jsme tři varianty <a class="tt" data-t="noc">hlavní obrazovky</a> a nechali
+  vybrat. Vyhrála ta nejstřízlivější: <b>jeden řádek na jednu poruchu</b>, tvrdě seřazené
+  podle důležitosti a pak podle stáří. Potvrzené a odložené poruchy klesnou dolů a zešednou.
+  Bod sítě je <b>sloupec, ne nadpis skupiny</b>. U řádku jsou vždycky vidět tlačítka
+  (žádné najíždění myší — má to fungovat na iPadu).</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Varianta seskupená po lokalitách vypadala hezčí, ale <b>kartička s názvem místa vypadá
+  jako tvrzení o příčině</b> — a to je přesně to, co jsi v NET-09 zakázal. Takže se seskupuje
+  na obrazovce jen tam, kde se seskupilo i v systému: „Výpadek proudu — bod X".</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Jednu věc jsme si z poražené varianty vzali: řádek, u kterého <b>není známá příčina ani
+  žádné potlačené zařízení pod ním</b>, dostane značku <b>„bez příčiny"</b>. Je to malé, ale
+  je to počítadlo té chybějící ruční práce z NET-08 — bude na vás koukat každou směnu,
+  dokud se to nedoplní.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Chceš tu obrazovku vidět naživo, než se postaví? Máme funkční ukázku všech tří variant
+  a dá se proklikat.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-24" data-q="Bereš na vědomí, že 3,8 GB historie měření ze starého systému se NEPŘENESE a staré výpadky budou nenávratně pryč?">
+  <div class="cnum">NET-24</div><div class="cbody">
+  <h3 style="color:var(--accent)">Historie měření ze starého systému se nepřenese. Nenávratně</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Ve starém systému je <b><span class="num">3,8 GB</span></b> historie měření
+  (<a class="tt" data-t="influx">InfluxDB</a>). <b>Nepřeneseme ji.</b> Nový systém začne
+  s prázdnou historií a od nuly si ji začne stavět. Nové měření se drží
+  <b><span class="num">30</span> dní</b> v plné podrobnosti, pak jako hodinové průměry
+  <b>půl roku</b> a jako denní <b>dva roky</b>.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Dva důvody, oba technické a oba nepříjemné. Zaprvé: starý systém si podrobná data držel
+  jen 48 hodin, takže <b>pod těmi průměry už žádný detail není</b> — přenášet by se daly jen
+  hotové průměry. A zadruhé: do systému, který si průměry počítá sám, <b>nejde staré průměry
+  vložit</b> tak, aby na ně navázal. Prakticky to znamená: <b>výpadky z minulosti se nedají
+  zrekonstruovat.</b> Kdyby se za rok chtěly trendy „jak to bylo dřív", jde to vyřešit
+  vedlejší tabulkou zvlášť — ale míchat to do nových dat je zakázané.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Rok podrobných dat vyjde na <span class="num">3,5 GB</span> — místo není problém.
+  U grafů jsme si dali jedno tvrdé pravidlo: <b>musí být poznat rozdíl mezi „tok byl nulový“
+  a „nemáme data“</b>. Nula se kreslí jako čára na nule, chybějící data <b>čáru přeruší</b>
+  a nikdy se nedopočítávají. Graf, který přes výpadek nakreslí rovnou čáru, není ošklivý —
+  je lživý.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Je ztráta historie přijatelná? Ptáme se výslovně, protože je nevratná: <b>až se starý
+  systém vypne, ta data jsou pryč.</b> Pokud je chceš aspoň zazálohovat pro jistotu,
+  musí se to udělat <b>před</b> vypnutím.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-25" data-q="Kdo zadá měsíční náklady u 149 bodů sítě? Bez nich umí systém spočítat jen příjmy a přehled je k ničemu.">
+  <div class="cnum">NET-25</div><div class="cbody">
+  <h3 style="color:var(--accent)">Kolik který bod sítě vydělá: příjmy umíme, náklady nemáme žádné</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Chtěl jsi vidět, které body sítě vydělávají a které se mají zrušit. Spočítali jsme,
+  co z toho jde dnes: <b>příjem <span class="num">56 800 €</span> měsíčně</b>, z toho
+  <b><span class="num">51 600 €</span> (91 %)</b> se dá přiřadit ke konkrétnímu bodu sítě.
+  <b>Náklady: <span class="num">0</span> ze <span class="num">149</span> bodů.</b>
+  Nikde není zadaný nájem za stožár, elektřina ani pronájem spoje.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Náklady budeme evidovat <b>po položkách a s platností od–do</b>, ne jako jedno číslo.
+  Rozhodnutí „zrušit bod" se dělá podle vývoje, a když se jedno číslo přepíše, vývoj zmizí.
+  Zásadní past, kterou jsme našli: <b>21 bodů sítě nemá ani jednoho klienta, ale visí na nich
+  jiné body.</b> Kdybychom počítali jen přímé klienty, přehled by doporučil zbourat páteř sítě.
+  Proto se u každého bodu ukáže <b>přímý příjem i příjem včetně toho, co za ním visí</b>.
+  A schválně jsme <b>nedělali</b> automatický verdikt typu „zrušit / nechat" — nad ručně
+  zadanými náklady a neúplnou mapou by se spletl přesně tam, kde jsou data nejtenčí,
+  a jeho nejhorší chyba (zbourat převaděč) je nevratná.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Ještě horší zpráva: <b>chtěli jsme počítat ze skutečně vyfakturovaných peněz a nejde
+  to</b> — z <span class="num">321 838</span> řádků faktur není ani jeden napojený na
+  konkrétní službu, takže se z faktury nedá dojít ke klientovi, k zařízení ani k bodu sítě.
+  Počítá se tedy z ceníkových cen služeb.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p><b>Kdo zadá náklady a máš je vůbec někde po jednotlivých bodech?</b> Bez nich systém
+  ukáže jen příjmy, což na rozhodnutí „zrušit / posílit" nestačí. Klidně stačí odhad —
+  nula je horší než odhad.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-26" data-q="Souhlasíš s odložením přenosů jednotlivých klientů (z RADIUSu), dokud se nevyjasní, kdo bude po migraci provozovat přihlašování klientů?">
+  <div class="cnum">NET-26</div><div class="cbody">
+  <h3>Kolik dat protáhne jednotlivý klient — umíme, ale zatím to nezapneme</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Data o přenosech jednotlivých klientů se budou brát z
+  <b><a class="tt" data-t="radius">RADIUSu</a></b> — tedy z toho, co si systém pouštějící
+  klienty do sítě už dnes zapisuje. Jen <b>čteme, nezasahujeme</b>. A <b>zatím to nezapneme</b>,
+  dokud se nevyjasní, kdo bude přihlašování klientů po odchodu ze starého systému provozovat.</p></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Zkoumali jsme čtyři možné zdroje a tři padly na vašich datech: <b>porty přepínačů</b>
+  (v systému je vyplněno 0 z 4 943 služeb a existuje jen 9 přepínačů),
+  <b>počítadla v MikroTicích</b> (po restartu se vynulují a při tisícovce klientů by
+  dotazování zatěžovalo právě to zařízení, které má omezovat rychlost) a <b>podrobné
+  záznamy o provozu</b> (mají smysl kvůli zákonné evidenci, ne kvůli objemům). RADIUS zbyl
+  jako jediný, který pokryje i <b>64 % klientů na sdílené wifi</b> — u nich se jinak nedá
+  poznat, kdo je kdo.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Až to půjde zapnout, bude to <b>orientační pomůcka pro techniky</b> — ne podklad
+  pro fakturaci a ne měřidlo pro omezování rychlosti (to je jiná disciplína, kde špatné
+  měření znamená zpomalení platícího klienta). Klientský portál s vlastními grafy jsi
+  vyřadil jako „asi nikdy".</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Kdo bude po migraci ze starého systému provozovat přihlašování klientů (RADIUS) —
+  my, ty, nebo to zůstane, kde to je? Bez odpovědi tahle část zůstane vypnutá.</p></div>
+  </div>
+</article>
+</section>
+
+<section class="grp">
+  <span class="gtag">Oddíl F</span>
+  <h2>Co chybí v datech a co se nestaví</h2>
+  <p class="gsub">Shrnutí ruční práce, kterou nemůžeme udělat my — a seznam vědomých
+  vynechávek.</p>
+
+<article class="clause" id="NET-27" data-q="Souhlasíš, že se udělá „úklid dat“ jako samostatná práce? A kdo ji udělá?">
+  <div class="cnum">NET-27</div><div class="cbody">
+  <h3>Pět děr v datech, které musí zaplnit člověk od vás</h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <p>Naměřili jsme, co v datech chybí. Není to programování — je to zadávání:</p>
+  <ul>
+    <li><b>Hesla k zařízením: 0 z 1 029.</b> Dokud nejsou, umí systém jen ping. Žádné
+    vytížení, žádné objemy dat, žádné teploty. <b>Zásadní překážka</b> pro celou podrobnější
+    část.</li>
+    <li><b>Co pod čím visí: 371 z 1 029</b> (NET-08). Bez toho je systém hlučný.</li>
+    <li><b>Kódy odběrných míst: 0 ze 149</b> (NET-20). Bez toho nefunguje párování na proud.</li>
+    <li><b>Role zařízení (páteř / koncové): nevyplněné u všech.</b> Bez toho systém nepozná,
+    které zařízení je na bodě sítě to hlavní.</li>
+    <li><b>Označení, který kabel je hlavní (uplink).</b> Bez toho nejdou grafy vytížení
+    ani výpočet, jestli je bod sítě přetížený.</li>
+  </ul></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>Píšeme to sem jako samostatný bod schválně, aby to nezapadlo mezi technikálie.
+  <b>Tohle je jediná část celého projektu, kterou nemůžeme udělat my</b> — a přitom na ní
+  závisí víc funkcí než na čemkoliv, co naprogramujeme.</p></div>
+  <div class="field"><span class="lab">V praxi</span>
+  <p>Hesla mají zvláštní režim: budou uložená v trezoru, ne v databázi. Ale někdo je tam
+  musí nejdřív nasypat.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Kdo tuhle práci udělá a kdy? Klidně po částech — pořadí podle užitku je:
+  <b>kódy odběrných míst → co pod čím visí → hesla → uplinky → role</b>.</p></div>
+  </div>
+</article>
+
+<article class="clause" id="NET-28" data-q="Souhlasíš se seznamem toho, co se v první verzi NEstaví?">
+  <div class="cnum">NET-28</div><div class="cbody">
+  <h3>Co se v první verzi vědomě <b>nestaví</b></h3>
+  <div class="field"><span class="lab">Rozhodli jsme</span>
+  <ul>
+    <li><b>Podrobné údaje ze zařízení</b> — vytížení procesoru, paměti, počty klientů
+    na wifi. Odloženo do druhé verze, hlavně proto, že bez hesel (NET-27) by to stejně
+    neběželo.</li>
+    <li><b>Zhoršený stav</b> — tedy „ještě to jede, ale už to skřípe". Chce to podrobná
+    data z bodu výš, takže je to taky druhá verze. <b>Je to přitom ta nejcennější
+    funkce</b>: poznat poruchu <b>dřív</b>, než nastane.</li>
+    <li><b>Grafy pro klienty</b> — vyřadil jsi jako „asi nikdy". Necháváme to tak.</li>
+    <li><b>Omezování rychlosti podle objemu dat</b> — monitoring může ukázat, kolik kdo
+    protáhl, ale nikdy nebude tím, kdo rychlost snižuje.</li>
+    <li><b>Automatické zprávy klientům o výpadku</b> (NET-12).</li>
+  </ul></div>
+  <div class="field"><span class="lab">Proč</span>
+  <p>První verze má jednu jedinou povinnost: <b>spolehlivě poznat, že něco nejede,
+  a říct to správnému člověku</b>. Všechno ostatní se dá dostavět nad fungující základ.</p></div>
+  <div class="ask"><span class="lab">Otázka na tebe</span>
+  <p>Souhlasíš? A je mezi těmi položkami něco, co bys chtěl mít radši hned — hlavně to
+  „už to skřípe" je věc, kvůli které se dá pořadí přehodit.</p></div>
+  </div>
+</article>
+</section>
+
+
+
+<div class="send">
+  <h2>Odeslat zpětnou vazbu</h2>
+  <p>Sestaví se textový přehled všech tvých odpovědí i poznámek, přiřazený k číslům
+  rozhodnutí. Text se ukáže na obrazovce a zkopíruje do schránky — pošli ho Ladimu, jak ti
+  to vyhovuje: e-mailem na <b>ladi@amentistudio.com</b>, přes WhatsApp, jakkoliv.</p>
+  <div class="row">
+    <button class="btn btn-p" id="send2">Připravit zpětnou vazbu k odeslání</button>
+    <button class="btn" id="copy2">Jen zkopírovat</button>
+    <button class="btn" id="dl2">Zobrazit text</button>
+  </div>
+  <div class="miss" id="misslist"></div>
+</div>
+
+<section class="gloss" id="slovnicek">
+  <h2>Slovníček pojmů</h2>
+  <dl id="glossdl"></dl>
+</section>
+
+<nav class="nav" id="navlinks">
+  <a href="#" data-nav="hub">← Rozcestník</a>
+  <a href="#" data-nav="part1">← Část 1 — Telefonie</a>
+</nav>
+
+</div>
+
+<button id="selbtn">Okomentovat</button>
+<div id="sheet"><div class="sheet-in">
+  <button class="x" id="sheetx" aria-label="Zavřít">✕</button>
+  <span class="k" id="sheetk"></span>
+  <h4 id="sheeth"></h4>
+  <p id="sheetp"></p>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const PART_ID   = "NET";
+const PART_NAME = "Část 2 — Monitoring sítě";
+const MAILTO    = "ladi@amentistudio.com";
+const LINKS     = { hub:"index.html", part1:"cast-1.html" };
+
+const TERMS = {
+  pbx:["PBX / ústředna","Krabice (nebo program na serveru), která rozděluje hovory uvnitř firmy. Přijme hovor zvenku a rozhodne, kde má zazvonit."],
+  asterisk:["Asterisk","Nejrozšířenější open-source telefonní ústředna. Zdarma, běží na obyčejném serveru, dá se do ní naprogramovat cokoliv."],
+  sip:["SIP","Protokol, kterým spolu telefony a ústředny domlouvají hovor přes internet. Náhrada za klasickou telefonní linku."],
+  siptrunk:["SIP trunk","Připojení naší ústředny k operátorovi přes internet místo drátu. Přes jeden trunk jde víc hovorů najednou."],
+  softphone:["Softphone","Telefon jako program v počítači. Volá se přes sluchátka s mikrofonem, číslo se vytáčí myší nebo klávesnicí."],
+  ari:["ARI","Rozhraní Asterisku, přes které mu jiný program může říkat, co má dělat, a dostávat zprávy o tom, co se právě děje s hovorem."],
+  wss:["WSS","Šifrované trvalé spojení mezi dvěma programy. Drží se otevřené, takže zprávy chodí okamžitě — na rozdíl od běžného načítání stránky."],
+  cli:["CLI / caller ID","Číslo volajícího. To, co se ukáže na displeji, když někdo volá. Celá vyskakovací karta stojí a padá na tom, že nám ho operátor doručí."],
+  clir:["CLIR / skryté číslo","Volající si u operátora zapnul skrývání čísla. Přijde nám hovor bez čísla — je to legální a musíme s tím počítat."],
+  ivr:["IVR / hlasové menu","„Pro fakturaci stiskněte jedničku.“ Nahraný hlas s výběrem, který volajícího nasměruje a nám zároveň řekne, proč volá."],
+  did:["DID","Přímé číslo, které z venku vede rovnou na konkrétní místo v ústředně, aniž by to někdo přepojoval."],
+  cdr:["CDR / záznam hovoru","Řádek v databázi o každém hovoru: kdo, kam, kdy, jak dlouho, jestli to někdo zvedl. Není to nahrávka, jen fakta."],
+  e164:["E.164","Mezinárodní tvar telefonního čísla, např. +421905123456. Jedno číslo se dá napsat deseti způsoby, tohle je ten jediný, podle kterého se dá spolehlivě porovnávat."],
+  stt:["STT / přepis řeči","Automatický převod nahrávky na text."],
+  whisper:["Whisper","Program od OpenAI, který přepisuje řeč na text. Dá se provozovat na vlastním serveru, takže nahrávky neopouštějí naši kontrolu."],
+  wer:["WER / chybovost","Kolik procent slov přepis splete. 30 % znamená, že každé třetí slovo je špatně — text se pořád dá číst a hledat v něm, ale není to doslovný záznam."],
+  vad:["VAD","Detekce, jestli je na nahrávce vůbec řeč. Bez ní si přepisovač nad tichem vymýšlí smysluplně znějící věty, které nikdo neřekl."],
+  gdpr:["GDPR","Evropské nařízení o ochraně osobních údajů. Nahrávka hlasu klienta je osobní údaj."],
+  ropa:["ROPA / záznamy o činnostech","Povinný interní seznam toho, jaké osobní údaje zpracováváme, kde a proč. Když nahrávky odejdou na cizí server, musí to tam být zapsané."],
+  pop:["POP / bod sítě","Místo, kde máme techniku — vysílač, stožár, rozvaděč. Od něj vedou linky ke klientům."],
+  trunkfree:["Trunk zdarma","VIPTel neúčtuje samotné připojení, platí se jen měsíční hlasový program. Zřízení nic nestojí."],
+  fayn:["FaYn","Brněnská firma, která vám dnes provozuje virtuální ústřednu pro českou stranu. Podle tebe „dělá potíže“."],
+  viptel:["VIPTel","Slovensko-český operátor. Jako jediný ověřený nám dá čisté přihlašovací údaje k SIP trunku, takže si můžeme provozovat vlastní ústřednu."],
+  ispadmin:["ISPadmin","Současný systém, ze kterého migrujeme. Telefonii neumí vůbec — žádné hovory v něm nejsou."],
+  ticket:["Ticket / úkol","Záznam o tom, že se něco má vyřešit — porucha, dotaz, montáž. Má stav, přiřazeného člověka a historii."],
+  mixmonitor:["MixMonitor","Funkce Asterisku, která hovor nahrává. Umí uložit každou stranu do vlastního kanálu."],
+  dispecink:["Dispečink","Fronta neuzavřených úkolů, ze které se práce rozděluje technikům."],
+
+  ping:["Ping / ICMP","Nejjednodušší test: pošle se malý paket a čeká se, jestli se vrátí. Zjistí, jestli zařízení odpovídá a jak rychle. Neřekne nic o tom, jestli funguje dobře."],
+  ztratovost:["Ztrátovost","Kolik procent pingů se nevrátilo. 0 % je v pořádku, 100 % znamená, že zařízení neodpovídá vůbec. Hodnoty mezi tím jsou zhoršená linka."],
+  snmp:["SNMP","Protokol, kterým se ze zařízení vyčítají podrobnosti — kolik dat proteklo, jak je vytížený procesor, kolik klientů visí na wifi. Vyžaduje přihlašovací údaje."],
+  sonda:["Sonda / kolektor","Malý program běžící u vás v síti, který pravidelně obchází zařízení a měří. Data si ukládá k sobě a posílá je do centrály."],
+  buffer:["Buffer / vyrovnávací paměť","Místo na disku sondy, kam se data ukládají, když se nedá spojit s centrálou. Po obnovení spojení se odešlou zpětně."],
+  centrala:["Centrála / mozek","Ta část systému, která z naměřených čísel rozhoduje, co je porucha, a komu se má poslat zpráva. Běží v cloudu, ne u vás."],
+  incident:["Incident","Jedna porucha, jak ji vidí člověk. Může pod sebou mít víc nefunkčních zařízení. To, co se potvrzuje a odkládá, je incident — ne jednotlivá zařízení."],
+  vypadek:["Výpadek (záznam)","Zápis v databázi, že konkrétní zařízení bylo od–do nedostupné. Fakt, ze kterého se pak počítají incidenty a smluvní dostupnost."],
+  mtls:["mTLS","Šifrované spojení, kde se navzájem prokazují obě strany certifikátem. Cizí sonda se nepřipojí, i kdyby znala adresu."],
+  go:["Go","Programovací jazyk. Výsledkem je jediný soubor, který se zkopíruje na server a spustí — nic dalšího se nemusí instalovat."],
+  timescale:["TimescaleDB","Databáze uzpůsobená na obrovské množství měření v čase. Umí data automaticky zhušťovat a mazat starší podrobnosti."],
+  agregace:["Agregace / zhuštění","Z minutových měření se udělají hodinové a denní průměry. Ušetří to místo, ale detail už se zpětně nedá získat."],
+  uplink:["Uplink","Kabel nebo spoj, kterým celý bod sítě visí na zbytku sítě. Když je vytížený na 100 %, je pomalu celý bod — i když jednotlivá zařízení jedou."],
+  cpe:["CPE","Zařízení u klienta doma — anténa, router, modem."],
+  radius:["RADIUS","Systém, který klienty pouští do sítě a zapisuje, kdy se připojili a kolik dat přenesli."],
+  nas:["NAS (v RADIUSu)","Zařízení, které klienty do sítě pouští a hlásí to RADIUSu — u vás typicky MikroTik."],
+  fup:["FUP","Omezení rychlosti po vyčerpání objemu dat."],
+  netflow:["NetFlow","Podrobný záznam o tom, kdo s kým komunikoval. Používá se na řešení potíží a na zákonnou evidenci provozu. Něco jiného než měření objemu."],
+  eic:["EIC kód","Jednoznačné označení odběrného místa elektřiny, začíná „24Z…“. Distributor podle něj hlásí výpadky proudu. Bez něj nedokážeme spárovat výpadek proudu s naším bodem sítě."],
+  distributor:["ZSD / VSD / SSD","Tři slovenští distributoři elektřiny — Západoslovenská, Východoslovenská a Stredoslovenská. První dva zveřejňují výpadky tak, že se dají číst automaticky; třetí jen plánované."],
+  sla:["SLA / dostupnost","Smluvně slíbená dostupnost služby a případná sleva, když se nedodrží."],
+  noc:["NOC obrazovka","Přehled toho, co je právě rozbité, seřazený podle důležitosti. Podle něj se rozhoduje, co se řeší teď."],
+  ack:["Potvrzení (ack)","Kliknutí „vidím to, dělám na tom“. Systém přestane připomínat, ale porucha zůstane otevřená. Není to totéž co uzavřít."],
+  deadman:["Hlídač (dead-man's switch)","Služba mimo naši infrastrukturu, které se každou chvíli ozveme. Když se neozveme, ozve se ona vám. Jediné, co odhalí, že spadl celý systém včetně hlídání."],
+  zabbix:["Zabbix","Nejrozšířenější hotový monitorovací systém. Zvažovali jsme ho a nakonec nepoužili."],
+  influx:["InfluxDB","Databáze, do které dnes starý systém ukládá měření. Máme z ní 3,8 GB historie."],
+  ispadmin2:["ISPadmin / NetMonitor","Váš současný systém a jeho monitorovací část. Umí měřit, ale neumí z toho udělat srozumitelnou poruchu ani nikoho pořádně upozornit."],
+  ses:["Amazon SES","Služba na rozesílání e-mailů. Použijeme frankfurtskou variantu, aby data zůstala v EU."],
+  twilio:["Twilio","Služba na rozesílání SMS. Použijeme dublinskou variantu."]
+};
+
+/* ── state ───────────────────────────────── */
+const KEY = "na_fb_" + PART_ID;
+let S = { replies:{}, notes:[] };
+try { S = Object.assign(S, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch(e){}
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
+
+const clauses = () => [...document.querySelectorAll(".clause")];
+
+/* ── terms ───────────────────────────────── */
+function wireTerms(){
+  document.querySelectorAll(".tt").forEach(el=>{
+    if(el.dataset.wired) return; el.dataset.wired="1";
+    const k = el.dataset.t;
+    if(TERMS[k] && !el.querySelector("sup")){
+      const s=document.createElement("sup"); s.textContent="?"; el.appendChild(s);
+    }
+    el.setAttribute("role","button"); el.setAttribute("tabindex","0");
+    const open = ()=>openSheet(k);
+    el.addEventListener("click",open);
+    el.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();open();} });
+  });
+}
+const sheet=document.getElementById("sheet");
+function openSheet(k){
+  const t=TERMS[k]; if(!t) return;
+  document.getElementById("sheetk").textContent="Vysvětlení pojmu";
+  document.getElementById("sheeth").textContent=t[0];
+  document.getElementById("sheetp").textContent=t[1];
+  sheet.classList.add("on");
+}
+document.getElementById("sheetx").onclick=()=>sheet.classList.remove("on");
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") sheet.classList.remove("on"); });
+document.addEventListener("click",e=>{
+  if(sheet.classList.contains("on") && !sheet.contains(e.target) && !e.target.closest(".tt"))
+    sheet.classList.remove("on");
+});
+
+/* ── glossary render ─────────────────────── */
+function renderGloss(){
+  const dl=document.getElementById("glossdl");
+  const used=new Set([...document.querySelectorAll(".tt")].map(e=>e.dataset.t));
+  [...used].filter(k=>TERMS[k]).sort((a,b)=>TERMS[a][0].localeCompare(TERMS[b][0],"cs"))
+   .forEach(k=>{
+     const dt=document.createElement("dt"); dt.textContent=TERMS[k][0];
+     const dd=document.createElement("dd"); dd.textContent=TERMS[k][1];
+     dl.append(dt,dd);
+   });
+}
+
+/* ── replies ─────────────────────────────── */
+function buildReplies(){
+  clauses().forEach(c=>{
+    const id=c.id;
+    const box=document.createElement("div");
+    box.className="replybox"; box.dataset.for=id;
+    box.innerHTML =
+      '<div class="rhead"><span class="lab">Tvoje odpověď</span>'+
+      '<span class="chip">bez odpovědi</span></div>'+
+      '<textarea placeholder="Souhlasím / nesouhlasím, protože…"></textarea>'+
+      '<div class="notes"></div>';
+    c.querySelector(".cbody").appendChild(box);
+    const ta=box.querySelector("textarea");
+    ta.value = S.replies[id] || "";
+    autosize(ta);
+    ta.addEventListener("input",()=>{
+      S.replies[id]=ta.value; save(); paint(c); autosize(ta);
+    });
+    paint(c);
+  });
+}
+function autosize(ta){ ta.style.height="auto"; ta.style.height=(ta.scrollHeight+2)+"px"; }
+function paint(c){
+  const id=c.id;
+  const has = (S.replies[id]||"").trim().length>0 || S.notes.some(n=>n.decId===id);
+  const box=c.querySelector(".replybox");
+  box.classList.toggle("has",has);
+  const chip=box.querySelector(".chip");
+  chip.textContent = has ? "odpovězeno" : "bez odpovědi";
+  chip.classList.toggle("ok",has);
+  c.classList.toggle("answered",has);
+  renderNotes(c);
+  progress();
+}
+function renderNotes(c){
+  const wrap=c.querySelector(".notes"); wrap.innerHTML="";
+  S.notes.filter(n=>n.decId===c.id).forEach(n=>{
+    const d=document.createElement("div"); d.className="note";
+    const b=document.createElement("blockquote"); b.textContent="„"+n.quote+"“";
+    const x=document.createElement("button"); x.className="del"; x.textContent="smazat";
+    x.onclick=()=>{ S.notes=S.notes.filter(m=>m.id!==n.id); save();
+      document.querySelectorAll('mark.q[data-n="'+n.id+'"]').forEach(m=>{
+        m.replaceWith(...m.childNodes); });
+      paint(c); };
+    const ta=document.createElement("textarea");
+    ta.placeholder="Co k té větě chceš říct?"; ta.value=n.text||"";
+    ta.addEventListener("input",()=>{ n.text=ta.value; save(); autosize(ta); paint(c); });
+    b.appendChild(x); d.append(b,ta); wrap.appendChild(d);
+    autosize(ta);
+  });
+}
+function progress(){
+  const cs=clauses();
+  const done=cs.filter(c=>c.classList.contains("answered")).length;
+  document.getElementById("ptxt").textContent=done+" / "+cs.length;
+  document.getElementById("pbar").style.width=(cs.length?done/cs.length*100:0)+"%";
+  const missing=cs.filter(c=>!c.classList.contains("answered")).map(c=>c.id);
+  const ml=document.getElementById("misslist");
+  ml.innerHTML = missing.length
+    ? "<b>Zatím bez odpovědi ("+missing.length+"):</b> "+missing.map(id=>'<a href="#'+id+'">'+id+'</a>').join(" · ")
+    : "<b>Odpověděl jsi na všechno.</b>";
+}
+
+/* ── selection → note ────────────────────── */
+const selbtn=document.getElementById("selbtn");
+let pending=null;
+document.addEventListener("mouseup",checkSel);
+document.addEventListener("touchend",checkSel);
+function checkSel(){
+  setTimeout(()=>{
+    const sel=window.getSelection();
+    if(!sel || sel.isCollapsed || !sel.toString().trim()){ selbtn.style.display="none"; pending=null; return; }
+    const r=sel.getRangeAt(0);
+    const host=(r.commonAncestorContainer.nodeType===1?r.commonAncestorContainer
+                :r.commonAncestorContainer.parentElement).closest(".clause");
+    if(!host || r.startContainer.parentElement.closest(".replybox")){
+      selbtn.style.display="none"; pending=null; return; }
+    const b=r.getBoundingClientRect();
+    selbtn.style.display="block";
+    selbtn.style.top=(window.scrollY+b.top-38)+"px";
+    selbtn.style.left=(window.scrollX+b.left)+"px";
+    pending={range:r.cloneRange(), text:sel.toString().trim().replace(/\s+/g," "), decId:host.id};
+  },10);
+}
+selbtn.onclick=()=>{
+  if(!pending) return;
+  const n={ id:pending.decId+"-p"+(S.notes.filter(x=>x.decId===pending.decId).length+1),
+            decId:pending.decId, quote:pending.text.slice(0,300), text:"" };
+  S.notes.push(n); save();
+  try{ const m=document.createElement("mark"); m.className="q"; m.dataset.n=n.id;
+       pending.range.surroundContents(m); }catch(e){}
+  window.getSelection().removeAllRanges();
+  selbtn.style.display="none";
+  const c=document.getElementById(n.decId); paint(c);
+  const tas=c.querySelectorAll(".note textarea"); if(tas.length) tas[tas.length-1].focus();
+  pending=null;
+};
+
+/* ── export ──────────────────────────────── */
+// The heading contains "?" markers from the glossary terms — strip them for the e-mail.
+function title(c){
+  const h=c.querySelector("h3").cloneNode(true);
+  h.querySelectorAll("sup").forEach(s=>s.remove());
+  return h.textContent.replace(/\s+/g," ").trim();
+}
+function compile(){
+  const cs=clauses();
+  const done=cs.filter(c=>c.classList.contains("answered"));
+  const L=[];
+  L.push("ZPĚTNÁ VAZBA — "+PART_NAME);
+  L.push("Datum: "+new Date().toLocaleString("cs-CZ"));
+  L.push("Zodpovězeno: "+done.length+" z "+cs.length);
+  L.push("");
+  L.push("════ ODPOVĚDI ════");
+  cs.forEach(c=>{
+    const id=c.id;
+    const r=(S.replies[id]||"").trim();
+    const ns=S.notes.filter(n=>n.decId===id && (n.text||"").trim());
+    if(!r && !ns.length) return;
+    L.push("");
+    L.push("["+id+"] "+title(c));
+    const q=c.dataset.q; if(q) L.push("  otázka: "+q);
+    if(r) L.push("  ODPOVĚĎ: "+r.replace(/\n/g,"\n           "));
+    ns.forEach(n=>{
+      L.push("  ── k větě: „"+n.quote+"“");
+      L.push("     ["+n.id+"] "+n.text.trim().replace(/\n/g,"\n     "));
+    });
+  });
+  const missing=cs.filter(c=>!c.classList.contains("answered")).map(c=>c.id);
+  L.push(""); L.push("════ BEZ ODPOVĚDI ("+missing.length+") ════");
+  L.push(missing.join(", ") || "—");
+  L.push(""); L.push("(vygenerováno z "+PART_NAME+")");
+  return L.join("\n");
+}
+function toast(m){ const t=document.getElementById("toast"); t.textContent=m;
+  t.classList.add("on"); setTimeout(()=>t.classList.remove("on"),2600); }
+async function copyTxt(t){
+  try{ await navigator.clipboard.writeText(t); return true; }
+  catch(e){ const ta=document.createElement("textarea"); ta.value=t;
+    ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
+    ta.select(); let ok=false; try{ ok=document.execCommand("copy"); }catch(_){}
+    ta.remove(); return ok; }
+}
+// The page runs inside a sandboxed frame, so it must never navigate anywhere itself —
+// a programmatic `location.href = "mailto:…"` gets blocked and replaces the whole page
+// with an error screen. Everything below therefore stays inside the frame: the text is
+// shown for copying, and the mail link is a real anchor the reader clicks.
+let modal=null;
+function buildModal(){
+  modal=document.createElement("div"); modal.id="modal";
+  modal.innerHTML=
+    '<div class="mcard">'+
+      '<h3>Zpětná vazba je připravená</h3>'+
+      '<p class="lead">Zkopíruj text a pošli ho Ladimu — e-mailem, přes WhatsApp, jakkoliv. '+
+      'Nemusíš nic upravovat.</p>'+
+      '<textarea class="out" readonly spellcheck="false"></textarea>'+
+      '<div class="mrow">'+
+        '<button class="btn btn-p" data-a="copy">Zkopírovat text</button>'+
+        '<a class="btn" data-a="mail" target="_blank" rel="noopener">Otevřít e-mail</a>'+
+        '<a class="btn" data-a="dl" download>Stáhnout soubor</a>'+
+        '<button class="btn" data-a="close" style="margin-left:auto">Zavřít</button>'+
+      '</div>'+
+      '<p class="mnote">Kdyby „Otevřít e-mail" nefungovalo, nevadí — text je ve schránce. '+
+      'Adresa: '+MAILTO+'</p>'+
+    '</div>';
+  document.body.appendChild(modal);
+  modal.addEventListener("click",e=>{ if(e.target===modal) closeModal(); });
+  modal.querySelector('[data-a="close"]').onclick=closeModal;
+  modal.querySelector('[data-a="copy"]').onclick=async e=>{
+    const ta=modal.querySelector("textarea.out");
+    ta.select(); ta.setSelectionRange(0,ta.value.length);
+    const ok=await copyTxt(ta.value);
+    e.target.textContent = ok ? "Zkopírováno ✓" : "Zkopíruj ručně (Ctrl+C)";
+    setTimeout(()=>{ e.target.textContent="Zkopírovat text"; },2500);
+  };
+}
+function closeModal(){ if(modal) modal.classList.remove("on"); }
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+
+async function doSend(){
+  if(!modal) buildModal();
+  const txt=compile();
+  const cs=clauses().length;
+  const done=clauses().filter(c=>c.classList.contains("answered")).length;
+  const subj="Zpětná vazba — "+PART_NAME+" ("+done+"/"+cs+")";
+  modal.querySelector("textarea.out").value=txt;
+  // Short mails only: a very long mailto: is silently dropped by some clients.
+  const body = txt.length<1500 ? txt
+    : "Zpětná vazba je zkopírovaná ve schránce — vlož ji sem přes Ctrl+V (Cmd+V).";
+  modal.querySelector('[data-a="mail"]').href =
+    "mailto:"+MAILTO+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
+  const dl=modal.querySelector('[data-a="dl"]');
+  try{
+    if(dl.dataset.url) URL.revokeObjectURL(dl.dataset.url);
+    const url=URL.createObjectURL(new Blob([txt],{type:"text/plain;charset=utf-8"}));
+    dl.href=url; dl.dataset.url=url; dl.download="zpetna-vazba-"+PART_ID.toLowerCase()+".txt";
+  }catch(e){ dl.style.display="none"; }   // download unsupported here — copying still works
+  modal.classList.add("on");
+  copyTxt(txt).then(ok=>{ if(ok) toast("Text je i ve schránce"); });
+}
+document.getElementById("send2").onclick=doSend;
+document.getElementById("topsend").onclick=doSend;
+document.getElementById("copy2").onclick=async()=>{
+  toast(await copyTxt(compile())?"Zkopírováno do schránky":"Nešlo zkopírovat — použij Odeslat"); };
+document.getElementById("dl2").onclick=doSend;
+
+// If the browser refuses to remember anything (private mode, blocked storage), say so
+// rather than let the reader lose an hour of writing.
+(function(){
+  let works=false;
+  try{ localStorage.setItem("__t","1"); localStorage.removeItem("__t"); works=true; }catch(e){}
+  if(works) return;
+  const w=document.createElement("div");
+  w.className="howto"; w.style.borderColor="var(--accent)";
+  w.innerHTML='<h2>Pozor — tenhle prohlížeč neukládá rozepsané odpovědi</h2>'+
+    '<p style="margin:0;color:var(--ink-soft);font-size:.95rem">Odpovědi zmizí, když stránku '+
+    'zavřeš. Projdi to na jeden zátah a na konci klikni na <b>Odeslat</b>.</p>';
+  const h=document.querySelector(".howto");
+  h.parentNode.insertBefore(w,h.nextSibling);
+})();
+
+/* ── nav ─────────────────────────────────── */
+document.querySelectorAll("[data-nav]").forEach(a=>{
+  const u=LINKS[a.dataset.nav];
+  if(u) a.href=u; else a.style.display="none";
+});
+
+wireTerms(); renderGloss(); buildReplies(); progress();
+</script>
+
+</body>
+</html>
