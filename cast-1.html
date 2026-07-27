@@ -163,6 +163,25 @@ mark.q{background:var(--mark);color:inherit;padding:0 .1em}
 .nav{margin:3rem 0 0;display:flex;gap:.8rem;flex-wrap:wrap;font-family:var(--sans);font-size:.88rem}
 .nav a{color:var(--accent);text-decoration:none;border:1px solid var(--rule);padding:.5rem .8rem}
 .nav a:hover{border-color:var(--accent)}
+/* ── prototype links + shots ────────────── */
+.proto{margin:.9rem 0 0;font-family:var(--sans);font-size:.88rem}
+.proto a{color:var(--accent);font-weight:600;text-decoration:none;
+  border-bottom:1px solid var(--accent)}
+.proto a:hover{background:var(--accent-soft)}
+.protobtn{font-family:var(--sans);font-weight:700;font-size:.92rem;color:#fff;
+  background:var(--accent);border:1px solid var(--accent);padding:.6rem 1rem;
+  text-decoration:none;display:inline-block}
+.protobtn:hover{opacity:.88}
+figure.shot{margin:0 0 2.4rem;border:1px solid var(--rule);background:var(--card);padding:1rem}
+figure.shot figcaption{font-family:var(--sans);font-size:.85rem;color:var(--ink-soft);
+  margin:0 0 .7rem;display:flex;gap:.5rem;align-items:baseline;flex-wrap:wrap}
+figure.shot .win{color:var(--done);font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;
+  border:1px solid var(--done);padding:.1rem .4rem}
+figure.shot .lose{color:var(--ink-faint);font-weight:600}
+figure.shot img{width:100%;height:auto;display:block;border:1px solid var(--rule-soft)}
+figure.shot p{margin:.8rem 0 0;font-size:.95rem;color:var(--ink-soft)}
+figure.shot code{font-family:var(--mono);font-size:.86em}
+
 /* ── export modal ───────────────────────── */
 #modal{position:fixed;inset:0;z-index:100;background:rgba(10,14,20,.62);display:none;
   align-items:center;justify-content:center;padding:1rem}
@@ -362,6 +381,7 @@ mark.q{background:var(--mark);color:inherit;padding:0 .1em}
   <p>Panel je <b>pomůcka, ne podmínka</b>. Když má operátorka zavřený prohlížeč nebo vypadne internet
   do systému, telefon <b>zazvoní stejně</b> a hovor se stejně zapíše. Jen nevyskočí karta.
   Nikdy se nestane, že by kvůli systému nebylo možné hovor přijmout.</p></div>
+  <p class="proto">→ <a href="prototyp-hovor.html">Živá ukázka: proklikej si celý hovor</a> (dá se ovládat)</p>
   <div class="ask"><span class="lab">Otázka na tebe</span>
   <p>Je to tak, jak si to představuješ? A co má být na kartě vidět jako první — jméno, dluh,
   otevřené úkoly, poslední kontakt? Napiš pořadí, jak by ti dávalo smysl.</p></div>
@@ -381,6 +401,7 @@ mark.q{background:var(--mark);color:inherit;padding:0 .1em}
   <div class="field"><span class="lab">V praxi</span>
   <p>Když volající menu přeskočí nebo se prokliká špatně, nadpis chybí a karta začne jménem.
   Volba z menu se zároveň předvyplní do úkolu, takže se nemusí psát znovu.</p></div>
+  <p class="proto">→ <a href="prototyp-hovor.html">Živá ukázka</a> — nadpis karty uvidíš rovnou v akci</p>
   <div class="ask"><span class="lab">Otázka na tebe</span>
   <p>Souhlasíš, nebo je jméno důležitější? Tohle je čistě věc zvyku lidí, kteří telefon berou —
   klidně se zeptej jich.</p></div>

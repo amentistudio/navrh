@@ -163,6 +163,25 @@ mark.q{background:var(--mark);color:inherit;padding:0 .1em}
 .nav{margin:3rem 0 0;display:flex;gap:.8rem;flex-wrap:wrap;font-family:var(--sans);font-size:.88rem}
 .nav a{color:var(--accent);text-decoration:none;border:1px solid var(--rule);padding:.5rem .8rem}
 .nav a:hover{border-color:var(--accent)}
+/* ── prototype links + shots ────────────── */
+.proto{margin:.9rem 0 0;font-family:var(--sans);font-size:.88rem}
+.proto a{color:var(--accent);font-weight:600;text-decoration:none;
+  border-bottom:1px solid var(--accent)}
+.proto a:hover{background:var(--accent-soft)}
+.protobtn{font-family:var(--sans);font-weight:700;font-size:.92rem;color:#fff;
+  background:var(--accent);border:1px solid var(--accent);padding:.6rem 1rem;
+  text-decoration:none;display:inline-block}
+.protobtn:hover{opacity:.88}
+figure.shot{margin:0 0 2.4rem;border:1px solid var(--rule);background:var(--card);padding:1rem}
+figure.shot figcaption{font-family:var(--sans);font-size:.85rem;color:var(--ink-soft);
+  margin:0 0 .7rem;display:flex;gap:.5rem;align-items:baseline;flex-wrap:wrap}
+figure.shot .win{color:var(--done);font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;
+  border:1px solid var(--done);padding:.1rem .4rem}
+figure.shot .lose{color:var(--ink-faint);font-weight:600}
+figure.shot img{width:100%;height:auto;display:block;border:1px solid var(--rule-soft)}
+figure.shot p{margin:.8rem 0 0;font-size:.95rem;color:var(--ink-soft)}
+figure.shot code{font-family:var(--mono);font-size:.86em}
+
 /* ── export modal ───────────────────────── */
 #modal{position:fixed;inset:0;z-index:100;background:rgba(10,14,20,.62);display:none;
   align-items:center;justify-content:center;padding:1rem}
@@ -479,6 +498,7 @@ mark.q{background:var(--mark);color:inherit;padding:0 .1em}
   místo aby systém prostě zmlkl.</p></div>
   <div class="field"><span class="lab">V praxi</span>
   <p>Jednotlivé poruchy jsou pod pruhem pořád vypsané. Jen se kvůli nim nevolá.</p></div>
+  <p class="proto">→ <a href="prototypy.html">Jak vypadá „omezený režim" na obrazovce</a></p>
   <div class="ask"><span class="lab">Otázka na tebe</span>
   <p>Je 40 % rozumná hranice? Máš v síti bod, jehož výpadek shodí většinu sítě a je to
   „normální" — třeba jeden hlavní přívod?</p></div>
@@ -809,6 +829,7 @@ mark.q{background:var(--mark);color:inherit;padding:0 .1em}
   žádné potlačené zařízení pod ním</b>, dostane značku <b>„bez příčiny"</b>. Je to malé, ale
   je to počítadlo té chybějící ruční práce z NET-08 — bude na vás koukat každou směnu,
   dokud se to nedoplní.</p></div>
+  <p class="proto">→ <a href="prototypy.html">Snímky všech tří variant obrazovky</a> — včetně těch zamítnutých</p>
   <div class="ask"><span class="lab">Otázka na tebe</span>
   <p>Chceš tu obrazovku vidět naživo, než se postaví? Máme funkční ukázku všech tří variant
   a dá se proklikat.</p></div>
@@ -837,6 +858,7 @@ mark.q{background:var(--mark);color:inherit;padding:0 .1em}
   a „nemáme data“</b>. Nula se kreslí jako čára na nule, chybějící data <b>čáru přeruší</b>
   a nikdy se nedopočítávají. Graf, který přes výpadek nakreslí rovnou čáru, není ošklivý —
   je lživý.</p></div>
+  <p class="proto">→ <a href="prototypy.html">Snímky tří variant grafů</a></p>
   <div class="ask"><span class="lab">Otázka na tebe</span>
   <p>Je ztráta historie přijatelná? Ptáme se výslovně, protože je nevratná: <b>až se starý
   systém vypne, ta data jsou pryč.</b> Pokud je chceš aspoň zazálohovat pro jistotu,

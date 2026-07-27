@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>newadmin — prototyp vyskakování hovoru</title>
+<style>
+  :root {
+    --bg:#EEF1F3; --panel:#FFFFFF; --panel-2:#F6F8F9; --sunken:#E7EBEE;
+    --ink:#15202B; --ink-soft:#516170; --ink-faint:#8494A1; --line:#D5DCE1;
+    --brand:#1F6F8B; --brand-soft:#E4EFF3;
+    --ring:#B8791A; --ring-soft:#F6ECD7;
+    --ok:#2F7A4F; --ok-soft:#E2EFE8; --bad:#A93226; --bad-soft:#F6E4E2;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0C1116; --panel:#161E25; --panel-2:#111820; --sunken:#0A0F14;
+      --ink:#E6ECF0; --ink-soft:#9FB0BC; --ink-faint:#6C7C88; --line:#26313A;
+      --brand:#63B6D0; --brand-soft:#132B34;
+      --ring:#D8A94F; --ring-soft:#2C2411; --ok:#77C595; --ok-soft:#13291D;
+      --bad:#E4867A; --bad-soft:#2E1714;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:#0C1116; --panel:#161E25; --panel-2:#111820; --sunken:#0A0F14;
+    --ink:#E6ECF0; --ink-soft:#9FB0BC; --ink-faint:#6C7C88; --line:#26313A;
+    --brand:#63B6D0; --brand-soft:#132B34;
+    --ring:#D8A94F; --ring-soft:#2C2411; --ok:#77C595; --ok-soft:#13291D;
+    --bad:#E4867A; --bad-soft:#2E1714;
+  }
+  :root[data-theme="light"] {
+    --bg:#EEF1F3; --panel:#FFFFFF; --panel-2:#F6F8F9; --sunken:#E7EBEE;
+    --ink:#15202B; --ink-soft:#516170; --ink-faint:#8494A1; --line:#D5DCE1;
+    --brand:#1F6F8B; --brand-soft:#E4EFF3;
+    --ring:#B8791A; --ring-soft:#F6ECD7; --ok:#2F7A4F; --ok-soft:#E2EFE8;
+    --bad:#A93226; --bad-soft:#F6E4E2;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; }
+  body { background:var(--bg); color:var(--ink); font-family:var(--sans);
+         font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button { font-family:inherit; cursor:pointer; }
+  h1,h2,h3,h4 { margin:0; }
+
+  /* ---------- app shell ---------- */
+  .app { display:grid; grid-template-columns:210px 1fr; height:100vh; min-height:0; }
+  @media (max-width:760px){ .app{ grid-template-columns:56px 1fr; } }
+
+  .side { background:var(--panel); border-right:1px solid var(--line); display:flex; flex-direction:column; gap:2px; padding:14px 10px; }
+  .brand { display:flex; align-items:center; gap:8px; padding:6px 8px 14px; font-weight:750; letter-spacing:-0.01em; }
+  .brand .dot { width:22px; height:22px; border-radius:6px; background:var(--brand); color:#fff; display:grid; place-items:center; font-size:13px; }
+  .nav { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:7px; color:var(--ink-soft); font-weight:550; }
+  .nav.active { background:var(--brand-soft); color:var(--brand); }
+  .nav .ico { width:18px; text-align:center; font-size:14px; }
+  .nav .badge { margin-left:auto; background:var(--bad); color:#fff; font-size:11px; font-weight:700;
+                min-width:18px; height:18px; border-radius:9px; display:grid; place-items:center; padding:0 5px; }
+  @media (max-width:760px){ .nav span.lbl, .brand span.lbl { display:none; } .nav{ justify-content:center; } }
+
+  .main { min-width:0; min-height:0; overflow:auto; position:relative; display:flex; flex-direction:column; }
+  .topbar { position:sticky; top:0; z-index:5; background:var(--panel); border-bottom:1px solid var(--line);
+            display:flex; align-items:center; gap:12px; padding:10px 18px; }
+  .topbar .crumb { color:var(--ink-faint); font-size:13px; }
+  .topbar .crumb b { color:var(--ink); }
+  .pbx { margin-left:auto; display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-soft); }
+  .pbx .lamp { width:9px; height:9px; border-radius:50%; background:var(--ok); box-shadow:0 0 0 3px var(--ok-soft); }
+  .pbx.down .lamp { background:var(--bad); box-shadow:0 0 0 3px var(--bad-soft); }
+  .pbx button { border:1px solid var(--line); background:var(--panel-2); color:var(--ink-soft);
+                border-radius:6px; padding:3px 8px; font-size:12px; }
+
+  .content { padding:18px; display:flex; flex-direction:column; gap:16px; max-width:900px; }
+
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+  .card > .hd { padding:12px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px; }
+  .card > .hd h3 { font-size:15px; font-weight:700; }
+  .card > .bd { padding:16px; display:flex; flex-direction:column; gap:12px; }
+
+  .pill { display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:650;
+          padding:2px 9px; border-radius:20px; }
+  .pill.ok { background:var(--ok-soft); color:var(--ok); }
+  .pill.warn { background:var(--ring-soft); color:var(--ring); }
+  .pill.bad { background:var(--bad-soft); color:var(--bad); }
+  .pill.muted { background:var(--sunken); color:var(--ink-soft); }
+
+  .kv { display:grid; grid-template-columns:130px 1fr; gap:6px 14px; font-size:13.5px; }
+  .kv dt { color:var(--ink-faint); }
+  .kv dd { margin:0; }
+  .mono { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+
+  textarea.note { width:100%; min-height:90px; resize:vertical; border:1px solid var(--line);
+                  border-radius:8px; background:var(--panel-2); color:var(--ink); padding:10px 12px;
+                  font-family:inherit; font-size:13.5px; line-height:1.5; }
+  textarea.note:focus { outline:2px solid var(--brand); outline-offset:1px; }
+  .hint { font-size:12px; color:var(--ink-faint); }
+
+  .btn { border:1px solid var(--line); background:var(--panel-2); color:var(--ink);
+         border-radius:7px; padding:7px 12px; font-size:13px; font-weight:600; }
+  .btn:hover { border-color:var(--brand); }
+  .btn.primary { background:var(--brand); border-color:var(--brand); color:#fff; }
+  .btn.ghost { background:transparent; }
+  .btn.sm { padding:4px 9px; font-size:12px; }
+  .btn.danger { color:var(--bad); border-color:var(--bad-soft); }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+
+  /* ---------- incoming-call content (shared, placed by variant) ---------- */
+  .call { display:flex; flex-direction:column; gap:14px; }
+  .call .who { display:flex; align-items:flex-start; gap:12px; }
+  .call .avatar { width:44px; height:44px; border-radius:10px; background:var(--sunken); color:var(--ink-soft);
+                  display:grid; place-items:center; font-size:18px; font-weight:700; flex:none; }
+  .call .who .main { min-width:0; display:flex; flex-direction:column; gap:3px; }
+  .call .name { font-size:17px; font-weight:750; letter-spacing:-0.01em; }
+  .call .sub { font-size:13px; color:var(--ink-soft); }
+  .call .reason { display:flex; align-items:center; gap:8px; font-size:13px; padding:8px 11px;
+                  background:var(--ring-soft); color:var(--ring); border-radius:8px; font-weight:600; }
+  .call .glance { display:flex; gap:8px; flex-wrap:wrap; }
+
+  .matchlist { display:flex; flex-direction:column; gap:8px; }
+  .matchrow { display:flex; align-items:center; gap:10px; padding:9px 11px; border:1px solid var(--line);
+              border-radius:9px; background:var(--panel-2); text-align:left; }
+  .matchrow:hover { border-color:var(--brand); }
+  .matchrow .m-main { min-width:0; }
+  .matchrow .m-name { font-weight:700; }
+  .matchrow .m-sub { font-size:12.5px; color:var(--ink-soft); }
+  .matchrow .m-go { margin-left:auto; color:var(--brand); font-weight:700; font-size:13px; }
+
+  .draftform { display:flex; flex-direction:column; gap:9px; }
+  .draftform input { border:1px solid var(--line); border-radius:7px; background:var(--panel-2);
+                     color:var(--ink); padding:8px 10px; font-family:inherit; font-size:13.5px; }
+  .draftform input:focus { outline:2px solid var(--brand); outline-offset:1px; }
+
+  .ticket { border:1px dashed var(--line); border-radius:9px; padding:12px; background:var(--panel-2);
+            display:flex; flex-direction:column; gap:9px; }
+  .ticket .tt { font-weight:700; font-size:13px; display:flex; align-items:center; gap:8px; }
+  .logged { font-size:12px; color:var(--ok); display:flex; align-items:center; gap:6px; }
+
+  /* ---------- Variant A: call bar ---------- */
+  #bar { position:fixed; left:50%; bottom:74px; transform:translateX(-50%) translateY(140%);
+         width:min(560px,92vw); z-index:40; transition:transform .28s cubic-bezier(.2,.8,.2,1); }
+  #bar.show { transform:translateX(-50%) translateY(0); }
+  #bar .shell { background:var(--panel); border:1px solid var(--line); border-radius:12px;
+                box-shadow:0 18px 44px rgba(0,0,0,.22); overflow:hidden; }
+  #bar .barhd { display:flex; align-items:center; gap:12px; padding:12px 14px; }
+  #bar .ringdot { width:11px; height:11px; border-radius:50%; background:var(--ring);
+                  animation:pulse 1s infinite; flex:none; }
+  @keyframes pulse { 0%,100%{ box-shadow:0 0 0 0 var(--ring-soft);} 50%{ box-shadow:0 0 0 7px transparent; } }
+  #bar .barhd .txt { min-width:0; flex:1; }
+  #bar .barhd .l1 { font-weight:750; font-size:15px; }
+  #bar .barhd .l2 { font-size:12.5px; color:var(--ink-soft); }
+  #bar .barbody { border-top:1px solid var(--line); padding:14px; display:none; }
+  #bar.open .barbody { display:block; }
+
+  /* ---------- Variant B: side panel ---------- */
+  #panel { position:fixed; top:0; right:0; height:100vh; width:min(400px,94vw); z-index:40;
+           background:var(--panel); border-left:1px solid var(--line); box-shadow:-18px 0 44px rgba(0,0,0,.16);
+           transform:translateX(102%); transition:transform .28s cubic-bezier(.2,.8,.2,1);
+           display:flex; flex-direction:column; }
+  #panel.show { transform:translateX(0); }
+  #panel .phd { padding:14px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px; }
+  #panel .phd .ringdot { width:11px; height:11px; border-radius:50%; background:var(--ring); animation:pulse 1s infinite; }
+  #panel .phd .t { font-weight:750; }
+  #panel .pbody { padding:16px; overflow:auto; }
+  #scrim { position:fixed; inset:0; background:rgba(8,12,16,.32); z-index:35; opacity:0; pointer-events:none; transition:opacity .2s; }
+  #scrim.show { opacity:1; }
+
+  /* ---------- Variant C: takeover banner ---------- */
+  #banner { position:sticky; top:0; z-index:6; display:none; align-items:center; gap:12px;
+            padding:11px 18px; background:var(--ring-soft); color:var(--ring);
+            border-bottom:1px solid var(--line); }
+  #banner.show { display:flex; }
+  #banner .ringdot { width:10px; height:10px; border-radius:50%; background:var(--ring); animation:pulse 1s infinite; }
+  #takeover { display:none; }
+  #takeover.show { display:flex; flex-direction:column; gap:16px; }
+  .guard { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:650;
+           color:var(--bad); background:var(--bad-soft); border-radius:7px; padding:5px 10px; }
+
+  /* ---------- degraded banner ---------- */
+  #degraded { display:none; align-items:center; gap:10px; padding:10px 14px; margin:0 18px;
+              background:var(--bad-soft); color:var(--bad); border-radius:9px; font-size:13px; font-weight:600; }
+  #degraded.show { display:flex; }
+
+  /* ---------- missed view ---------- */
+  #view-missed { display:none; }
+  #view-missed.show { display:flex; }
+  .missedrow { display:flex; align-items:center; gap:12px; padding:11px 14px; border-bottom:1px solid var(--line); }
+  .missedrow:last-child { border-bottom:none; }
+  .missedrow .m-when { font-size:12px; color:var(--ink-faint); width:78px; flex:none; }
+  .missedrow .m-name { font-weight:650; }
+  .missedrow .m-sub { font-size:12.5px; color:var(--ink-soft); }
+
+  /* ---------- toast ---------- */
+  #toast { position:fixed; left:50%; bottom:20px; transform:translateX(-50%) translateY(30px);
+           background:var(--ink); color:var(--bg); padding:9px 16px; border-radius:9px; font-size:13px;
+           font-weight:600; z-index:60; opacity:0; pointer-events:none; transition:.24s; }
+  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ---------- control deck ---------- */
+  #deck { position:fixed; left:50%; bottom:0; transform:translateX(-50%); z-index:50;
+          width:min(920px,98vw); background:var(--panel); border:1px solid var(--line);
+          border-bottom:none; border-radius:12px 12px 0 0; box-shadow:0 -10px 30px rgba(0,0,0,.14);
+          padding:9px 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  #deck .grp { display:flex; align-items:center; gap:6px; }
+  #deck .lbl { font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+               color:var(--ink-faint); margin-right:2px; }
+  #deck .sep { width:1px; align-self:stretch; background:var(--line); margin:2px 4px; }
+  .sim { border:1px solid var(--line); background:var(--panel-2); color:var(--ink);
+         border-radius:20px; padding:5px 11px; font-size:12.5px; font-weight:600; }
+  .sim:hover { border-color:var(--brand); color:var(--brand); }
+  .vswitch { display:flex; align-items:center; gap:4px; background:var(--sunken); border-radius:20px; padding:3px; }
+  .vswitch button { border:none; background:transparent; color:var(--ink-soft); border-radius:16px;
+                    padding:5px 11px; font-size:12.5px; font-weight:650; }
+  .vswitch button.on { background:var(--brand); color:#fff; }
+  #deck .flag { font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+                color:var(--ink-faint); border:1px dashed var(--line); border-radius:6px; padding:3px 7px; }
+  @media (max-width:760px){ #deck .flag, #deck .lbl { display:none; } }
+
+  .ribbon { position:fixed; top:0; left:0; z-index:70; background:var(--ring); color:#241a05;
+            font-size:10.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+            padding:3px 30px; transform:translate(-30%,58%) rotate(-38deg); pointer-events:none; }
+</style>
+</head>
+<body>
+<p style="max-width:52rem;margin:1rem auto;padding:0 1.25rem;font:15px/1.5 ui-sans-serif,system-ui,sans-serif;opacity:.75"><a href="index.html" style="color:inherit">← zpět na rozcestník</a> · <a href="prototypy.html" style="color:inherit">všechny prototypy</a></p>
+
+<div class="ribbon">Prototyp</div>
+
+<div class="app">
+  <!-- sidebar -->
+  <aside class="side">
+    <div class="brand"><span class="dot">n</span><span class="lbl">newadmin</span></div>
+    <div class="nav"><span class="ico">◱</span><span class="lbl">Prehľad</span></div>
+    <div class="nav active" id="nav-clients"><span class="ico">◲</span><span class="lbl">Klienti</span></div>
+    <div class="nav"><span class="ico">▦</span><span class="lbl">Tickety</span></div>
+    <div class="nav"><span class="ico">€</span><span class="lbl">Faktúry</span></div>
+    <div class="nav" id="nav-missed"><span class="ico">☎</span><span class="lbl">Zmeškané</span><span class="badge" id="missedBadge">3</span></div>
+  </aside>
+
+  <!-- main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb">Klienti / <b id="crumbName">Ján Kráľ</b></div>
+      <div class="pbx" id="pbx">
+        <span class="lamp"></span><span id="pbxLabel">Ústredňa pripojená</span>
+        <button id="pbxToggle">simulovať výpadok</button>
+      </div>
+    </div>
+
+    <!-- Variant C banner -->
+    <div id="banner"><span class="ringdot"></span><b>Prichádzajúci hovor</b><span id="bannerText">— +421 907 112 233</span>
+      <button class="btn sm primary" style="margin-left:auto" onclick="openTakeover()">Otvoriť kartu</button>
+      <button class="btn sm ghost" onclick="dismissCall(true)">Zmeškať</button>
+    </div>
+
+    <div id="degraded" class="_">⚠ Ústredňa je nedostupná — hovory idú priamo na mobil a <b>karta nevyskočí</b>. Zmeškané sa aj tak zapíšu, keď sa ústredňa vráti.</div>
+
+    <div class="content">
+
+      <!-- normal client view (the "mid-edit" work context) -->
+      <div id="view-client">
+        <div class="card">
+          <div class="hd">
+            <h3>Ján Kráľ</h3>
+            <span class="pill ok">aktívny</span>
+            <span class="pill muted mono">SK-1042</span>
+          </div>
+          <div class="bd">
+            <dl class="kv">
+              <dt>Telefón</dt><dd class="mono">+421 907 112 233</dd>
+              <dt>Adresa</dt><dd>Palárikova 12, 022 01 Čadca</dd>
+              <dt>Služba</dt><dd>Internet 100/100 + IPTV</dd>
+              <dt>Bilancia</dt><dd><span class="pill ok">0,00 € — vyrovnané</span></dd>
+              <dt>Otvorené tickety</dt><dd>žiadne · posledný pred 4 mesiacmi</dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd"><h3>Poznámka ku klientovi</h3><span class="hint" style="margin-left:auto">rozpísané, neuložené</span></div>
+          <div class="bd">
+            <textarea class="note" id="workNote">Volal ohľadom prekládky zásuvky do vedľajšej miestnosti — dohodnúť termín technika na budúci týždeň, klient preferuje </textarea>
+            <div class="hint">Toto je „rozrobená práca". Skúšaj simulovať hovor a sleduj, či ti text zostane — vyskakovanie nesmie o prácu pripraviť.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- missed-call view -->
+      <div id="view-missed">
+        <div class="card" style="width:100%">
+          <div class="hd"><h3>Zmeškané hovory</h3><span class="hint" style="margin-left:auto">zavolaj späť — karta klienta je hneď po ruke</span></div>
+          <div id="missedList"></div>
+        </div>
+      </div>
+
+      <!-- Variant C takeover card -->
+      <div id="takeover"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Variant A: call bar -->
+<div id="bar">
+  <div class="shell">
+    <div class="barhd" onclick="toggleBar()">
+      <span class="ringdot"></span>
+      <div class="txt"><div class="l1" id="barName">—</div><div class="l2" id="barSub">—</div></div>
+      <button class="btn sm ghost" onclick="event.stopPropagation();dismissCall(true)">Zmeškať</button>
+      <button class="btn sm primary" onclick="event.stopPropagation();answerFromBar()">Prijať</button>
+    </div>
+    <div class="barbody" id="barBody"></div>
+  </div>
+</div>
+
+<!-- Variant B: side panel -->
+<div id="scrim" onclick="dismissCall(false)"></div>
+<div id="panel">
+  <div class="phd"><span class="ringdot"></span><span class="t">Prichádzajúci hovor</span>
+    <button class="btn sm ghost" style="margin-left:auto" onclick="dismissCall(false)">✕</button></div>
+  <div class="pbody" id="panelBody"></div>
+</div>
+
+<div id="toast"></div>
+
+<!-- control deck -->
+<div id="deck">
+  <span class="lbl">Simuluj hovor</span>
+  <div class="grp" id="simBtns">
+    <button class="sim" data-sc="known">Známy klient</button>
+    <button class="sim" data-sc="unknown">Neznáme číslo</button>
+    <button class="sim" data-sc="multi">Dvaja klienti</button>
+    <button class="sim" data-sc="outage">Výpadok internetu</button>
+  </div>
+  <div class="sep"></div>
+  <span class="lbl">Doručenie</span>
+  <div class="vswitch" id="vswitch">
+    <button data-v="A" class="on">Lišta</button>
+    <button data-v="B">Panel</button>
+    <button data-v="C">Celá karta</button>
+  </div>
+  <div class="sep"></div>
+  <span class="flag">rough · dáta zaseté · kópia bude EN</span>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var variant = "A";
+  var call = null;   // active call
+  var missed = [
+    {name:"Anna Behúňová", sub:"SK-2087 · Turzovka", when:"dnes 9:12", reason:"Fakturácia", num:"+421 908 771 300"},
+    {name:"Neznáme číslo", sub:"nespárované", when:"dnes 8:48", reason:"Podpora", num:"+421 918 220 145"},
+    {name:"Jozef Haluška", sub:"SK-3390 · Čadca", when:"včera 16:40", reason:"Výpadok internetu", num:"+421 905 660 771"}
+  ];
+
+  var SC = {
+    known:  { kind:"one", num:"+421 907 112 233", reason:"Fakturácia",
+              clients:[{name:"Ján Kráľ", id:"SK-1042", addr:"Palárikova 12, Čadca", svc:"Internet + IPTV", status:"aktívny", bal:"0,00 €"}] },
+    unknown:{ kind:"zero", num:"+421 918 555 010", reason:"Podpora", clients:[] },
+    multi:  { kind:"many", num:"+421 903 224 466", reason:"Podpora", clients:[
+              {name:"Mária Nováková", id:"SK-2210", addr:"Horná 5, Čadca", svc:"Internet 50/50", status:"aktívny"},
+              {name:"Peter Novák",    id:"SK-2211", addr:"Horná 5, Čadca", svc:"IPTV", status:"neplatič"}] },
+    outage: { kind:"one", num:"+421 905 660 771", reason:"Výpadok internetu", outage:true,
+              clients:[{name:"Jozef Haluška", id:"SK-3390", addr:"Kýčerka 8, Čadca", svc:"Internet 100/100", status:"aktívny", bal:"0,00 €"}] }
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){ return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  function now(){ return "teraz"; } // prototype: no real clock
+
+  function initials(name){
+    if(!name) return "?";
+    var p = name.split(" ").filter(Boolean);
+    return ((p[0]||"")[0]||"") + ((p[1]||"")[0]||"");
+  }
+  function statusPill(s){
+    var cls = s==="neplatič" ? "bad" : (s==="aktívny" ? "ok" : "muted");
+    return '<span class="pill '+cls+'">'+esc(s)+'</span>';
+  }
+
+  // ---- shared call content, rendered into whatever container the variant uses ----
+  function renderCallInner(c, opts){
+    opts = opts || {};
+    var h = '<div class="call">';
+    // reason first — the IVR signal is the headline: "why" before "who finishes talking"
+    h += '<div class="reason">◔ Dôvod voľby v menu: <b>'+esc(c.reason)+'</b>'+(c.outage?' — nahlásený výpadok':'')+'</div>';
+
+    if(c.kind==="one"){
+      var cl = c.clients[0];
+      h += '<div class="who"><div class="avatar">'+esc(initials(cl.name))+'</div><div class="main">'
+         + '<div class="name">'+esc(cl.name)+'</div>'
+         + '<div class="sub mono">'+esc(c.num)+' · '+esc(cl.id)+'</div>'
+         + '<div class="sub">'+esc(cl.addr)+' · '+esc(cl.svc)+'</div>'
+         + '<div class="glance" style="margin-top:4px">'+statusPill(cl.status)
+         + (cl.bal?'<span class="pill ok">'+esc(cl.bal)+' vyrovnané</span>':'')
+         + '</div></div></div>';
+      if(c.outage){
+        h += '<button class="btn primary" onclick="handToTech()">↪ Odovzdať technikovi</button>';
+      }
+      h += ticketBlock(c, cl);
+    }
+    else if(c.kind==="zero"){
+      h += '<div class="who"><div class="avatar">?</div><div class="main">'
+         + '<div class="name">Neznáme číslo</div>'
+         + '<div class="sub mono">'+esc(c.num)+'</div>'
+         + '<div class="sub">Nie je spárované so žiadnym klientom.</div></div></div>';
+      h += '<div class="draftform">'
+         + '<div class="hint" style="font-weight:650;color:var(--ink)">Rýchlo založiť kontakt</div>'
+         + '<input value="'+esc(c.num)+'" readonly>'
+         + '<input placeholder="Meno klienta (nepovinné teraz)">'
+         + '<div class="row"><button class="btn" onclick="toast(\'Založený koncept kontaktu\')">Založiť koncept</button>'
+         + '<span class="hint">alebo</span>'
+         + '<button class="btn ghost" onclick="toast(\'Vyhľadávanie klienta…\')">🔍 Nájsť a priradiť existujúceho</button></div>'
+         + '</div>';
+      h += ticketBlock(c, {name:"Neznámy volajúci"});
+    }
+    else if(c.kind==="many"){
+      h += '<div class="hint" style="font-weight:650;color:var(--ink)">Na toto číslo je vedených '+c.clients.length+' klientov — vyber, s kým hovoríš:</div>';
+      h += '<div class="matchlist">';
+      c.clients.forEach(function(cl,i){
+        h += '<button class="matchrow" onclick="pickMatch('+i+')"><div class="m-main">'
+           + '<div class="m-name">'+esc(cl.name)+' &nbsp;'+statusPill(cl.status)+'</div>'
+           + '<div class="m-sub">'+esc(cl.addr)+' · '+esc(cl.svc)+' · '+esc(cl.id)+'</div>'
+           + '</div><span class="m-go">Otvoriť →</span></button>';
+      });
+      h += '</div><div class="hint">Nie chyba — zoznam. Adresa a služba pomôžu rozlíšiť rovnaké meno v rodine.</div>';
+    }
+    h += '</div>';
+    return h;
+  }
+
+  function ticketBlock(c, cl){
+    return '<div class="ticket"><div class="tt">▦ Predvyplnený ticket <span class="hint" style="font-weight:500">(uloží sa až na tvoje kliknutie)</span></div>'
+      + '<dl class="kv" style="grid-template-columns:110px 1fr">'
+      + '<dt>Klient</dt><dd>'+esc(cl.name)+'</dd>'
+      + '<dt>Predmet</dt><dd>'+esc(c.reason)+(c.outage?' — výpadok':'')+'</dd>'
+      + '<dt>Prijal(a)</dt><dd>Jana (ty)</dd>'
+      + '<dt>Čas</dt><dd>'+now()+'</dd></dl>'
+      + '<div class="row"><button class="btn primary" onclick="saveTicket()">Uložiť ticket</button>'
+      + '<button class="btn ghost" onclick="toast(\'Ticket nezaložený — hovor zostáva v zázname\')">Netreba ticket</button></div>'
+      + '<div class="logged">✓ Hovor je už zaznamenaný (dátum, číslo, dôvod) nezávisle na tickete.</div></div>';
+  }
+
+  // ---- delivery per variant ----
+  function showCall(sc){
+    if($("pbx").classList.contains("down")){
+      // degraded: no pop, straight to missed
+      flashDegraded();
+      addMissedFromSc(sc);
+      return;
+    }
+    call = SC[sc];
+    var inner = renderCallInner(call);
+    // reset all deliveries
+    hideAllDeliveries();
+    if(variant==="A"){
+      $("barName").textContent = deliveryTitle(call);
+      $("barSub").textContent = call.num + " · " + call.reason;
+      $("barBody").innerHTML = inner;
+      $("bar").classList.add("show");
+      // many/zero auto-expand (there's a decision to make); one stays collapsed until answer
+      if(call.kind!=="one"){ $("bar").classList.add("open"); }
+    } else if(variant==="B"){
+      $("panelBody").innerHTML = inner;
+      $("panel").classList.add("show"); $("scrim").classList.add("show");
+    } else {
+      $("bannerText").textContent = "— " + call.num + " · " + call.reason;
+      $("banner").classList.add("show");
+    }
+  }
+  function deliveryTitle(c){
+    if(c.kind==="one") return c.clients[0].name;
+    if(c.kind==="many") return c.clients.length + " klienti — " + c.num;
+    return "Neznáme číslo";
+  }
+  function hideAllDeliveries(){
+    $("bar").classList.remove("show","open");
+    $("panel").classList.remove("show"); $("scrim").classList.remove("show");
+    $("banner").classList.remove("show");
+    $("takeover").classList.remove("show");
+    $("view-client").style.display="";
+  }
+
+  window.toggleBar = function(){ $("bar").classList.toggle("open"); };
+  window.answerFromBar = function(){ $("bar").classList.add("open"); };
+  window.openTakeover = function(){
+    // Variant C: switch main area to the card, with an unsaved-work guard
+    var unsaved = ($("workNote").value.trim().length>0);
+    var inner = renderCallInner(call);
+    var guard = unsaved ? '<div class="guard">● Máš neuloženú poznámku u „Ján Kráľ" — po hovore sa naň vráť (zostala uložená v prehliadači).</div>' : '';
+    $("takeover").innerHTML = '<div class="card"><div class="hd"><h3>Prichádzajúci hovor</h3>'
+      + '<span class="pill warn">zvoní</span><button class="btn sm ghost" style="margin-left:auto" onclick="dismissCall(false)">Skryť</button></div>'
+      + '<div class="bd">'+guard+inner+'</div></div>';
+    $("view-client").style.display="none";
+    $("view-missed").classList.remove("show");
+    $("takeover").classList.add("show");
+  };
+
+  window.dismissCall = function(asMissed){
+    if(asMissed && call){ addMissedFromSc(callScKey(call)); }
+    call=null; hideAllDeliveries();
+  };
+  function callScKey(c){ for(var k in SC){ if(SC[k]===c) return k; } return "known"; }
+
+  window.pickMatch = function(i){
+    var cl = call.clients[i];
+    toast("Otvorené: " + cl.name);
+    // collapse to a one-client view in the same delivery
+    call = {kind:"one", num:call.num, reason:call.reason, clients:[cl]};
+    if(variant==="A"){ $("barName").textContent=cl.name; $("barSub").textContent=call.num+" · "+call.reason; $("barBody").innerHTML=renderCallInner(call); $("bar").classList.add("open"); }
+    else if(variant==="B"){ $("panelBody").innerHTML=renderCallInner(call); }
+    else { openTakeover(); }
+  };
+
+  window.saveTicket = function(){ toast("Ticket uložený ✓"); dismissCall(false); };
+  window.handToTech = function(){ toast("Odovzdané dispečingu → technik"); };
+
+  function addMissedFromSc(sc){
+    var c = SC[sc];
+    var name = c.kind==="one" ? c.clients[0].name : (c.kind==="many" ? "Viac zhôd" : "Neznáme číslo");
+    var sub = c.kind==="one" ? (c.clients[0].id+" · "+c.clients[0].addr.split(",").pop().trim()) : c.num;
+    missed.unshift({name:name, sub:sub, when:now(), reason:c.reason, num:c.num});
+    renderMissed(); bumpMissedBadge();
+    toast("Zmeškané zapísané do zoznamu");
+  }
+  function bumpMissedBadge(){ $("missedBadge").textContent = missed.length; }
+
+  function renderMissed(){
+    var h = "";
+    missed.forEach(function(m){
+      h += '<div class="missedrow"><span class="m-when">'+esc(m.when)+'</span>'
+         + '<div class="m-main" style="min-width:0"><div class="m-name">'+esc(m.name)+'</div>'
+         + '<div class="m-sub mono">'+esc(m.num)+' · '+esc(m.reason)+'</div></div>'
+         + '<button class="btn sm primary" style="margin-left:auto" onclick="callBack(\''+esc(m.name)+'\')">☎ Zavolať späť</button></div>';
+    });
+    $("missedList").innerHTML = h;
+  }
+  window.callBack = function(n){ toast("Vytáčam " + n + " …  (karta sa otvorí)"); };
+
+  // ---- degraded ----
+  function flashDegraded(){
+    $("degraded").classList.add("show");
+    toast("Ústredňa nedostupná — hovor nevyskočil, ide na mobil");
+  }
+  $("pbxToggle").addEventListener("click", function(){
+    var p = $("pbx"); var down = p.classList.toggle("down");
+    $("pbxLabel").textContent = down ? "Ústredňa nedostupná" : "Ústredňa pripojená";
+    this.textContent = down ? "obnoviť" : "simulovať výpadok";
+    if(!down){ $("degraded").classList.remove("show"); }
+  });
+
+  // ---- nav ----
+  function showView(which){
+    if(which==="missed"){ $("view-client").style.display="none"; $("takeover").classList.remove("show"); $("view-missed").classList.add("show"); setNav("nav-missed"); }
+    else { $("view-missed").classList.remove("show"); if(!$("takeover").classList.contains("show")) $("view-client").style.display=""; setNav("nav-clients"); }
+  }
+  function setNav(id){ ["nav-clients","nav-missed"].forEach(function(n){ $(n).classList.toggle("active", n===id); }); }
+  $("nav-missed").addEventListener("click", function(){ showView("missed"); });
+  $("nav-clients").addEventListener("click", function(){ showView("client"); });
+
+  // ---- toast ----
+  var toTimer;
+  window.toast = function(msg){ var t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toTimer); toTimer=setTimeout(function(){ t.classList.remove("show"); },2200); };
+
+  // ---- deck wiring ----
+  Array.prototype.forEach.call(document.querySelectorAll("#simBtns .sim"), function(b){
+    b.addEventListener("click", function(){ showView("client"); showCall(b.getAttribute("data-sc")); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("#vswitch button"), function(b){
+    b.addEventListener("click", function(){
+      variant = b.getAttribute("data-v");
+      Array.prototype.forEach.call(document.querySelectorAll("#vswitch button"), function(x){ x.classList.toggle("on", x===b); });
+      if(call){ var k=callScKey(call); showCall(k); } // re-deliver current call in new variant
+    });
+  });
+
+  renderMissed(); bumpMissedBadge();
+})();
+</script>
+
+</body>
+</html>
