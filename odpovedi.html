@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>Co dál — odpovědi a otázky (30. 7. 2026)</title>
+<style>
+  :root {
+    --bg: #F5F7F8; --surface: #FFFFFF; --surface-2: #EDF1F2;
+    --ink: #151A1E; --ink-2: #4E5A62; --ink-3: #74838C;
+    --line: #D9E0E3; --line-2: #C3CDD2;
+    --accent: #0B6470; --accent-soft: #E2EFF1;
+    --warn: #8A5200; --warn-soft: #F8EEDE;
+    --ok: #1F6340; --ok-soft: #E4F0E9;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0F1316; --surface: #161B1F; --surface-2: #1D2429;
+      --ink: #E6EBED; --ink-2: #A3AFB6; --ink-3: #7C8A92;
+      --line: #262E34; --line-2: #354047;
+      --accent: #5FC3CE; --accent-soft: #123034;
+      --warn: #DDA557; --warn-soft: #2B2214;
+      --ok: #6FBE93; --ok-soft: #14251C;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1316; --surface: #161B1F; --surface-2: #1D2429;
+    --ink: #E6EBED; --ink-2: #A3AFB6; --ink-3: #7C8A92;
+    --line: #262E34; --line-2: #354047;
+    --accent: #5FC3CE; --accent-soft: #123034;
+    --warn: #DDA557; --warn-soft: #2B2214;
+    --ok: #6FBE93; --ok-soft: #14251C;
+  }
+  :root[data-theme="light"] {
+    --bg: #F5F7F8; --surface: #FFFFFF; --surface-2: #EDF1F2;
+    --ink: #151A1E; --ink-2: #4E5A62; --ink-3: #74838C;
+    --line: #D9E0E3; --line-2: #C3CDD2;
+    --accent: #0B6470; --accent-soft: #E2EFF1;
+    --warn: #8A5200; --warn-soft: #F8EEDE;
+    --ok: #1F6340; --ok-soft: #E4F0E9;
+  }
+
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16.5px; line-height: 1.62; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 50rem; margin: 0 auto; padding: 3.5rem 1.5rem 6rem; display: flex; flex-direction: column; gap: 3.25rem; }
+  p { margin: 0; max-width: 62ch; }
+  .stack { display: flex; flex-direction: column; gap: 0.9rem; }
+
+  .eyebrow { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-3); margin: 0; }
+  h1 { font-size: clamp(1.9rem, 4.5vw, 2.6rem); line-height: 1.12; letter-spacing: -0.02em; font-weight: 700; margin: 0; text-wrap: balance; }
+  h2 { font-size: clamp(1.3rem, 3vw, 1.65rem); line-height: 1.18; letter-spacing: -0.015em; font-weight: 700; margin: 0; text-wrap: balance; }
+  h3 { font-size: 1.02rem; font-weight: 650; margin: 0; }
+  .lede { font-size: 1.08rem; color: var(--ink-2); max-width: 60ch; }
+  strong { font-weight: 650; }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 3px; padding: 0.05em 0.32em; word-break: break-word; }
+  hr.rule { height: 1px; background: var(--line); border: 0; margin: 0; }
+
+  .win { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .win-item { background: var(--surface); padding: 0.95rem 1.1rem; display: grid; grid-template-columns: 1fr; gap: 0.25rem; }
+  @media (min-width: 44rem) { .win-item { grid-template-columns: 7.5rem 1fr; gap: 1.1rem; align-items: start; } }
+  .win-item .c { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; color: var(--accent); padding-top: 0.35em; }
+  .win-item .d { font-size: 0.95rem; color: var(--ink-2); }
+  .win-item .d b { color: var(--ink); font-weight: 650; }
+
+  .qa { background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 1.25rem 1.3rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .qa .q { font-size: 1rem; font-weight: 650; }
+  .qa .a { font-size: 0.96rem; color: var(--ink-2); }
+  .qa .a b { color: var(--ink); }
+  .qa.pending { background: var(--warn-soft); border-color: var(--line-2); }
+  .qa .tag { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warn); }
+
+  .ask { background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 1.25rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .ask .n { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-3); letter-spacing: 0.1em; }
+  .ask .q { font-size: 1rem; font-weight: 650; }
+  .ask .why { font-size: 0.92rem; color: var(--ink-3); }
+  .seg { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .seg label { font-size: 0.85rem; padding: 0.32rem 0.62rem; border: 1px solid var(--line); border-radius: 4px; cursor: pointer; color: var(--ink-2); background: var(--surface); white-space: nowrap; }
+  .seg label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+  .seg label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+
+  textarea { font-family: inherit; font-size: 0.95rem; line-height: 1.55; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 5px; padding: 0.6rem 0.7rem; resize: vertical; min-height: 3.4rem; width: 100%; box-sizing: border-box; }
+  textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  textarea::placeholder { color: var(--ink-3); }
+
+  .todo { display: flex; flex-direction: column; gap: 0.6rem; }
+  .todo-item { display: grid; grid-template-columns: 1fr; gap: 0.3rem; padding: 0.85rem 1rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+  .todo-item .t { font-size: 0.95rem; font-weight: 650; }
+  .todo-item .s { font-size: 0.89rem; color: var(--ink-3); }
+
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; min-width: 30rem; }
+  th, td { text-align: left; padding: 0.6rem 0.85rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: var(--mono); font-size: 0.67rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .del { color: var(--ink-3); }
+
+  .bar { position: sticky; bottom: 0; background: var(--surface); border: 1px solid var(--line-2); border-radius: 7px; padding: 1rem 1.15rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; box-shadow: 0 -2px 16px rgb(0 0 0 / 0.08); }
+  .prog { font-family: var(--mono); font-size: 0.8rem; font-variant-numeric: tabular-nums; color: var(--ink-2); margin-right: auto; }
+  .prog b { color: var(--ink); }
+  .btn { font-family: inherit; font-size: 0.9rem; font-weight: 600; padding: 0.55rem 0.95rem; border-radius: 5px; border: 1px solid var(--line-2); background: var(--surface-2); color: var(--ink); cursor: pointer; }
+  .btn:hover { border-color: var(--accent); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .btn-quiet { background: transparent; color: var(--ink-3); border-color: transparent; }
+  .said { font-size: 0.85rem; color: var(--ok); font-family: var(--mono); }
+  .said.bad { color: #B3261E; }
+  footer { color: var(--ink-3); font-size: 0.86rem; font-family: var(--mono); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="stack">
+    <p class="eyebrow">newadmin &middot; navazuje na tvoje odpovědi z 28. a 30. 7.</p>
+    <h1>Díky. Prošli jsme všech padesát.</h1>
+    <p class="lede">Každou tvoji odpověď jsme přiložili k tomu, co jsme o té věci rozhodli dřív, a koukali, kde se to rozchází. Výsledek: <strong>u 33 věcí jsi jen potvrdil, co jsme plánovali</strong>, u zbytku jsi něco změnil — a v pěti případech dost zásadně.</p>
+    <p>Tenhle dokument má tři části. <strong>Co se díky tobě změnilo</strong> · <strong>odpovědi na to, na co ses ptal</strong> · <strong>otázky, které potřebujeme od tebe</strong>. Otázky jdou vyplnit rovnou tady dole a poslat zpátky jedním tlačítkem.</p>
+    <p><strong>A jedna oprava proti minule:</strong> psal jsi, že ti v komentářích po jednom písmenu mizel kurzor. Tady se to nestane — pole se dají psát normálně a rozepsané odpovědi přežijí i zavření stránky.</p>
+  </header>
+
+  <hr class="rule" />
+
+  <section class="stack">
+    <p class="eyebrow">Část 1</p>
+    <h2>Co se změnilo, protože jsi to řekl</h2>
+    <p>Tohle nejsou zdvořilosti — u každé položky jsme kvůli tvojí odpovědi měnili návrh, a u tří z nich budeme stavět <strong>míň</strong>, ne víc.</p>
+
+    <div class="win">
+      <div class="win-item">
+        <span class="c">NET-26</span>
+        <span class="d"><b>Zrušili jsme celou jednu součást.</b> Měli jsme rozhodnuto, že data o přenosech jednotlivých klientů vytáhneme z RADIUSu. Tys napsal, že klientský RADIUS neexistuje — jedou na DHCP a RADIUS je jen na přihlašování techniků. Takže ten zdroj je prázdný a to, co jsme kolem něj navrhli, jsme <b>zahodili</b>. Kapacita linek se tím nezhorší, ta se počítá jinak.</span>
+      </div>
+      <div class="win-item">
+        <span class="c">NET-01</span>
+        <span class="d"><b>Našel jsi díru v návrhu.</b> Sonda po výpadku posílala data po pořádku od nejstaršího, takže při pomalé lince by aktuální stav dorazil klidně za osm hodin — přesně ta „kilobitová rychlost", co popisuješ. Měníme to: <b>sonda pošle nejdřív aktuální měření a historii dohání zpětně.</b> Když se buffer nikdy nedožene, ztratí se to nejstarší, což je přesně to, cos říkal, že tě nezajímá.</span>
+      </div>
+      <div class="win-item">
+        <span class="c">NET-02</span>
+        <span class="d"><b>Traceroute bereme, a bude dělat víc, než jsi chtěl.</b> Kromě diagnostiky bude <b>navrhovat chybějící závislosti</b> ve stromu (technik je jen potvrdí) a hlavně <b>hlásit rozpory</b> u těch už zadaných. To je důležité: v datech je <b>286 rozbitých</b> závislostí, ne jen chybějících — a ty člověk při doplňování nenajde, protože vypadají vyplněně.</span>
+      </div>
+      <div class="win-item">
+        <span class="c">NET-08</span>
+        <span class="d"><b>Měříme cíle, ne zařízení.</b> Tvoje věta „nemonitorovaná záloha je k ničemu" nám změnila datový model: jeden router může mít <b>víc sledovaných IP</b>, a sledovat půjdou i <b>tunely, záložní linky</b> a u přepínačů bez IP <b>stav portu na sousedovi</b>.</span>
+      </div>
+      <div class="win-item">
+        <span class="c">NET-08 &middot; 17 &middot; 19</span>
+        <span class="d"><b>Napájení se stalo vlastním projektem.</b> Ta věc s 250 W na 155 W zdroji byl nejsilnější argument v celé zpětné vazbě — je to porucha, která vás stojí peníze a dnes ji nikdo neuvidí. Řeší se to samostatně: <b>zálohované okruhy, přiřazení zařízení k napájení, rezerva zdroje, stáří baterek a odhad, jak dlouho vydrží</b>.</span>
+      </div>
+      <div class="win-item">
+        <span class="c">NET-15</span>
+        <span class="d"><b>Kalendář služeb bude v systému.</b> Původně jsme rotaci modelovat nechtěli. Tvoje tabulka to obrátila — bude to <b>kalendář, kontrola obsazenosti postů (to je ten tvůj sloupec s „PODPORA OK"), a počítání odměn</b>. Navíc z něj bude systém brát, komu má v noci volat.</span>
+      </div>
+      <div class="win-item">
+        <span class="c">NET-05 &middot; 11</span>
+        <span class="d"><b>Závažnost poruchy se bude počítat z váhy klientů, ne z jejich počtu.</b> Tvoje „jeden VIP je víc než pět domků" jsme vzali doslova. Pozor ale — tím se posunou i hranice, kdy se co hlásí; přepočítáme je, protože staré by po zavedení vah hlásily zbytečně často.</span>
+      </div>
+      <div class="win-item">
+        <span class="c">NET-17</span>
+        <span class="d"><b>„Samouzavření znamená, že se na to někdo vykašlal."</b> Tuhle větu jsme udělali pravidlem: co se zavře <b>bez toho, aby se toho kdokoli chytil</b>, jde do fronty ke kontrole a zůstane tam. Co někdo řešil, tam nepadá — jinak by ta fronta byla do měsíce k ničemu.</span>
+      </div>
+      <div class="win-item">
+        <span class="c">NET-23</span>
+        <span class="d"><b>Ruční slučování poruch bude.</b> Technik připne jednu pod druhou, uvidí počet podřízených, a při hromadném zavření systém <b>ověří podle měření</b> a co pořád leží, to <b>vyjme zpátky</b> jako samostatný úkol.</span>
+      </div>
+      <div class="win-item">
+        <span class="c">TEL-01</span>
+        <span class="d"><b>Telefon nebude na jednom sedadle.</b> Přepsali jsme to na frontu: kdo má službu, ten se přihlásí k odbavování, jde se předat, i přibrat druhou při náporu.</span>
+      </div>
+      <div class="win-item">
+        <span class="c">TEL-04 &middot; 05</span>
+        <span class="d"><b>Číslo 595 171 987 si necháme</b> — přenese se na nového operátora při přepnutí. Testovat se bude na novém slovenském čísle. A přidali jsme <b>hodnocení kvality hovoru</b>, ať se příště nedostaneme do situace, kdy dodavatel neumí říct, proč hovor nejde.</span>
+      </div>
+      <div class="win-item">
+        <span class="c">TEL-14</span>
+        <span class="d"><b>Přepis hovorů odkládáme, jak jsi navrhl.</b> Nahrávání ano, přepis později. Ušetří to teď grafickou kartu i práci navíc — a až na to dojde, jde zapnout bez přestavby.</span>
+      </div>
+      <div class="win-item">
+        <span class="c">TEL-22</span>
+        <span class="d"><b>Hromadná SMS po opravě bude mít tři skupiny</b>, ne dvě — přesně jak jsi to rozepsal, včetně té třetí: <i>opraveno, ale na vaší přípojce nevidíme žádný provoz, ozvěte se prosím znovu</i>.</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <section class="stack">
+    <p class="eyebrow">Část 2</p>
+    <h2>Na co ses ptal</h2>
+
+    <div class="qa">
+      <span class="q">Bylo v těch 3,5 GB za rok jen pingání, nebo i všechny porty na všech zařízeních?</span>
+      <span class="a"><b>Jen pingání.</b> Měl jsi pravdu, že se ptáš. Data z rozhraní na zařízeních přidají zhruba <b>dalších 2,5 GB za rok</b>. Dohromady jsme někde kolem <b>6–9 GB za rok</b>, komprimovaně — což je tak málo, že kvůli místu nemusíme mazat vůbec nic a můžeme si dovolit držet detail.</span>
+    </div>
+
+    <div class="qa">
+      <span class="q">Jak funguje ten nezávislý hlídač? Hlídá doručení, nebo spam listy? K čemu vlastně je?</span>
+      <span class="a">Ani jedno. Je to <b>hlídač mrtvého muže</b>: náš systém mu každou chvíli pošle „žiju". <b>Poplach spustí ticho</b> — když se neozveme, ozve se on tobě. Je to jediná konstrukce, která funguje i ve chvíli, kdy je celý náš systém dole, protože nezávisí na ničem našem. <b>Neumí ale sám nikam pingat</b>, takže na to, co chceš v NET-18 — hlídat pár páteřních routerů zvenku — je potřeba druhý, jiný nástroj. Ten doporučujeme přidat.</span>
+    </div>
+
+    <div class="qa">
+      <span class="q">Počítají se do trunku i odchozí hovory?</span>
+      <span class="a"><b>Ano, počítají</b>, a je dobře, že ses zeptal — je to přesně ta situace, cos popsal: jedna zvedá, dvě volají ven, a čtvrtý se už nedovolá. Proto od tebe potřebujeme číslo do otázky 1 níž, než objednáme program.</span>
+    </div>
+
+    <div class="qa">
+      <span class="q">Jaké jsou ty čtyři volby v menu?</span>
+      <span class="a"><b>Trefil jsi je.</b> Fakturace a platby · hlášení výpadku · technická konzultace bez výpadku · obchodní věci. Zbývá jen znění hlášek — viz otázka 12.</span>
+    </div>
+
+    <div class="qa">
+      <span class="q">„Hlavní link" — ani jsem nevěděl, že to jde nastavit. Je to novinka po updatu?</span>
+      <span class="a">Není to v MikroTiku, <b>je to naše pole</b>. Znamená to „tímhle rozhraním vede nadřazená linka" a je to důležitější, než zní: <b>bez něj neumíme spočítat provoz na zařízení</b>, protože bychom sečetli i to, co jím jenom protéká. Takže se nedoplňuje — spíš rozhodneme, jestli si to systém najde sám, nebo to určí technik.</span>
+    </div>
+
+    <div class="qa">
+      <span class="q">Kde jsme vzali číslo 3018? Klientů určitě ne, možná služeb?</span>
+      <span class="a"><b>Měl jsi pravdu, a byla to naše chyba.</b> Do toho počtu se nám připletly smazané záznamy. Správně je to takhle:</span>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Údaj</th><th>Špatně</th><th>Správně</th></tr></thead>
+          <tbody>
+            <tr><td>Klienti s aktivní službou</td><td class="num del">3 018</td><td class="num"><b>1 968</b></td></tr>
+            <tr><td>Klienti, u kterých neumíme říct, jestli jim to jede</td><td class="num del">~320</td><td class="num"><b>16</b></td></tr>
+            <tr><td>Aktivní služby</td><td class="num del">4 943</td><td class="num"><b>2 756</b></td></tr>
+            <tr><td>POPů, kam doplnit kódy odběrných míst</td><td class="num del">149</td><td class="num"><b>134</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <span class="a">Takže <b>ta práce s kódy je o patnáct míst menší</b>, než jsme ti řekli. A stav „nevíme, jestli mu to jede" se týká šestnácti klientů, ne tří set — což je dobrá zpráva, ale zároveň to znamená, že jsme kolem toho dělali větší povyk, než bylo potřeba.</span>
+    </div>
+
+    <div class="qa pending">
+      <span class="tag">Ještě nemáme</span>
+      <span class="q">Na čem bude sonda postavená, kolik přijde a jakou oblast obslouží?</span>
+      <span class="a">Zatím ti to neřekneme, protože by to byl odhad. <b>Konkrétní kus železa vybereme až u stavebního plánu</b> a přineseme cenu i s tím, kolik zařízení utáhne. Co už víme jistě a co do zadání píšeme kvůli tobě: musí umět <b>napájení 24 V, −48 V i 230 V</b> a být <b>menší než 1U</b>, protože jinde se ti to nevejde. Ta věc s výpočtem, kolik dat se do ní vejde a na kolik hodin to vystačí, tam bude — vzorec už máme, jen se doteď nikde neukazoval.</span>
+    </div>
+
+    <div class="qa pending">
+      <span class="tag">Ještě nemáme</span>
+      <span class="q">Jaké jsou ceny za ty SMS?</span>
+      <span class="a">Musíme si <b>vyžádat nabídku</b>. Ta částka, cos viděl, počítala jen s upozorněními pro vás — pár set zpráv měsíčně. <b>SMS klientům je úplně jiný objem</b> a jiná cena, a nechceme ti dát číslo, které pak neplatí. Na Slovensku se navíc <b>nemusí nikde registrovat jméno odesílatele</b>, takže <code>CadcaNET</code> jde použít hned.</span>
+    </div>
+
+    <div class="qa pending">
+      <span class="tag">Ověříme</span>
+      <span class="q">Kolik věcí ten hlídač za 20 dolarů uhlídá?</span>
+      <span class="a">Přesný počet ti potvrdíme, ať neřekneme blbost. Podstatnější ale je to výš: <b>na páteřní routery ten hlídač stejně nestačí</b>, protože sám nikam nepinká. Přidáme k němu druhý nástroj a přineseme cenu za obojí.</span>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <section class="stack">
+    <p class="eyebrow">Část 3</p>
+    <h2>Co potřebujeme od tebe</h2>
+    <p>Čtrnáct otázek. U většiny stačí věta. <strong>Klidně jich vyplň jen část</strong> a pošli — zbytek doplníme telefonem.</p>
+
+    <div class="ask">
+      <span class="n">01</span>
+      <span class="q">Kolik hovorů může běžet naráz ve špičce — příchozí i odchozí dohromady?</span>
+      <span class="why">Bez toho neumíme objednat správný program u operátora. Odchozí se počítají taky, takže „dvě holky volají ven a jedna zvedá" jsou tři linky.</span>
+      <textarea name="Q1" rows="2" placeholder="Např. běžně 2, ve špičce 4–5."></textarea>
+    </div>
+
+    <div class="ask">
+      <span class="n">02</span>
+      <span class="q">„Ve službě" — je to podle kalendáře služeb, nebo podle toho, kdo se ten den přihlásil do admina?</span>
+      <span class="why">V NET-06 jsi napsal obojí. Kalendář je dohledatelný a jde podle něj eskalovat; „kdo se přihlásil" se zpětně neprokáže.</span>
+      <div class="seg">
+        <label><input type="radio" name="Q2" value="kalendář služeb" />Kalendář služeb</label>
+        <label><input type="radio" name="Q2" value="kdo se přihlásil" />Kdo se přihlásil</label>
+        <label><input type="radio" name="Q2" value="kombinace" />Kombinace</label>
+      </div>
+      <textarea name="Q2n" rows="2" placeholder="Upřesnění (nepovinné)"></textarea>
+    </div>
+
+    <div class="ask">
+      <span class="n">03</span>
+      <span class="q">Co znamenají kódy <code>SVA</code>, <code>SK</code>, <code>SK-poh</code> a <code>KOM</code>?</span>
+      <span class="why">V legendě tabulky nejsou, ale v datech se používají. Ostatní kódy máme rozepsané.</span>
+      <textarea name="Q3" rows="3" placeholder="SVA = … / SK = … / SK-poh = … / KOM = …"></textarea>
+    </div>
+
+    <div class="ask">
+      <span class="n">04</span>
+      <span class="q">Denní přehled pro šéftechnika — kdo co řešil a jak dlouho. Mají ta čísla vidět i technici sami?</span>
+      <span class="why">Ptáme se schválně: je to spíš otázka na atmosféru ve firmě než technická. Obojí umíme.</span>
+      <div class="seg">
+        <label><input type="radio" name="Q4" value="jen šéftechnik" />Jen šéftechnik</label>
+        <label><input type="radio" name="Q4" value="i technici vidí svoje" />Technici vidí svoje</label>
+        <label><input type="radio" name="Q4" value="vidí všichni všechno" />Vidí všichni všechno</label>
+      </div>
+      <textarea name="Q4n" rows="2" placeholder="Upřesnění (nepovinné)"></textarea>
+    </div>
+
+    <div class="ask">
+      <span class="n">05</span>
+      <span class="q">Významní klienti se mají dovolat technikovi i v neděli o půlnoci. Kolika klientů se to týká a komu to má zvonit?</span>
+      <span class="why">Jestli technikovi ve službě, umíme to vzít z kalendáře. Jestli konkrétnímu člověku, je to jiné zapojení.</span>
+      <textarea name="Q5" rows="2" placeholder="Např. 6 klientů, zvonit technikovi ve službě."></textarea>
+    </div>
+
+    <div class="ask">
+      <span class="n">06</span>
+      <span class="q">Příkon zařízení, pořizovací cena a životnost — vede se to někde, nebo se to bude zadávat od nuly?</span>
+      <span class="why">Potřebujeme to dvakrát: na hlídání rezervy zdroje na POPu, a na spočítání nákladů POPu, o kterém jsi psal v NET-25.</span>
+      <textarea name="Q6" rows="2" placeholder="Např. příkon nikde, ceny ve fakturách, životnost odhadem."></textarea>
+    </div>
+
+    <div class="ask">
+      <span class="n">07</span>
+      <span class="q">Čím se měří zbytková kapacita linky mezi dvěma MikroTiky — btest, nebo vlastní skript?</span>
+      <span class="why">V NET-02 to popisuješ jako věc, co už používáte. Chceme měřit stejně, ne vymýšlet vlastní.</span>
+      <textarea name="Q7" rows="2" placeholder="Klidně jen název skriptu, doladíme u ukázky."></textarea>
+    </div>
+
+    <div class="ask">
+      <span class="n">08</span>
+      <span class="q">Jak se dnes pozná, který provoz patří kterému klientovi? A to <code>radius_username</code> u 88 % služeb — je to od techniků, nebo pozůstatek?</span>
+      <span class="why">Rozhoduje to, jestli se ten graf přenosů dá někdy oživit. Napsal jsi, že se to řeší podle IP — potřebujeme vědět, odkud se ta IP bere (z DHCP?).</span>
+      <textarea name="Q8" rows="3" placeholder=""></textarea>
+    </div>
+
+    <div class="ask">
+      <span class="n">09</span>
+      <span class="q">Až bude ústředna volajícímu sama říkat „víme o výpadku, opraveno bude v…", smí to říkat <b>umělým hlasem</b>?</span>
+      <span class="why">Umělý hlas umí říct cokoli včetně času. Předtočené fragmenty zní líp, ale jde s nimi říct jen to, co se předtočí.</span>
+      <div class="seg">
+        <label><input type="radio" name="Q9" value="umělý hlas OK" />Umělý hlas je OK</label>
+        <label><input type="radio" name="Q9" value="jen předtočené" />Jen předtočené</label>
+        <label><input type="radio" name="Q9" value="chci slyšet ukázku" />Chci slyšet ukázku</label>
+      </div>
+      <textarea name="Q9n" rows="2" placeholder="Upřesnění (nepovinné)"></textarea>
+    </div>
+
+    <div class="ask">
+      <span class="n">10</span>
+      <span class="q">V datech je <b>104 klientů, kteří mají IČO, ale nejsou označení jako firma</b>. Co je pravda?</span>
+      <span class="why">Nová otázka, na tu ses neptal. Chceme podle toho počítat váhu klienta (firma víc než domácnost), takže potřebujeme vědět, kterému údaji věřit.</span>
+      <div class="seg">
+        <label><input type="radio" name="Q10" value="pravda je IČO" />Platí IČO</label>
+        <label><input type="radio" name="Q10" value="pravda je příznak firma" />Platí příznak „firma“</label>
+        <label><input type="radio" name="Q10" value="nevím, projdeme to" />Nevím, projdeme to</label>
+      </div>
+      <textarea name="Q10n" rows="2" placeholder="Upřesnění (nepovinné)"></textarea>
+    </div>
+
+    <div class="ask">
+      <span class="n">11</span>
+      <span class="q">Váhy klientů — sedí stupnice domácnost 1 · firma 5 · VIP 5 · velká firma 50? A kdo je smí měnit?</span>
+      <span class="why">U „velké firmy" nemáme v datech nic, podle čeho ji poznat, takže ji zatím necháváme stranou. A protože tahle váha v noci budí lidi, chceme obchodu dát pevný strop, ne volné pole.</span>
+      <textarea name="Q11" rows="3" placeholder="Např. sedí, velkou firmu urči ručně, měnit smí jen šéftechnik."></textarea>
+    </div>
+
+    <div class="ask">
+      <span class="n">12</span>
+      <span class="q">Znění hlášek v telefonním menu — slovensky i česky. Napíšeš je ty, nebo máme navrhnout a ty to opravíš?</span>
+      <span class="why">Je v tom i věta o nahrávání, kterou nakonec bude schvalovat právník, takže návrh počká na něj.</span>
+      <textarea name="Q12" rows="2" placeholder=""></textarea>
+    </div>
+
+    <div class="ask">
+      <span class="n">13</span>
+      <span class="q">Pošleš ten monitoring plánovaných odstávek od vašeho bývalého technika (psal jsi o něm v NET-19)?</span>
+      <span class="why">Může tam být zdroj dat, o kterém nevíme — hlavně u SSD, kde se plánované odstávky dají dostat jen přihlášením k odběru.</span>
+      <textarea name="Q13" rows="2" placeholder="Klidně jen „pošlu“ nebo odkaz."></textarea>
+    </div>
+
+    <div class="ask">
+      <span class="n">14</span>
+      <span class="q">Kdy se můžeme podívat naživo na to, jak systém zapisuje Queue tree?</span>
+      <span class="why">Nabídl jsi to v NET-28 a bereme to — <b>je to jedna z mála věcí, kterou musíme umět hned v první verzi</b>. Až starý systém vypneme, musí queue tree psát newadmin, jinak přestane fungovat omezování rychlostí všem.</span>
+      <textarea name="Q14" rows="2" placeholder="Např. čtvrtek odpoledne."></textarea>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <section class="stack">
+    <p class="eyebrow">Část 4</p>
+    <h2>Co jsi slíbil, ať se to neztratí</h2>
+    <p>Nic z toho neurguje — jen si to držíme na jednom místě, protože na třech z těch věcí visí, jestli bude monitoring umět říct příčinu, nebo jen že něco spadlo.</p>
+    <div class="todo">
+      <div class="todo-item">
+        <span class="t">Kódy odběrných míst — nově 134, ne 149</span>
+        <span class="s">Do měsíce, z 95 %, přes pronajímatele. <b>Bez nich neumí systém spojit výpadek s odstávkou proudu</b> — je to jediná vazba, kterou na příčinu máme.</span>
+      </div>
+      <div class="todo-item">
+        <span class="t">Závislosti mezi routery</span>
+        <span class="s">Dnes sedí u 36 % zařízení. Dokud se nedoplní, systém při jednom výpadku nahlásí deset poruch místo jedné. Traceroute vám s tím pomůže, ale rozbité vazby musí potvrdit technik.</span>
+      </div>
+      <div class="todo-item">
+        <span class="t">Role zařízení a „hlavní link"</span>
+        <span class="s">Zadal jsi to děvčeti a šéftechnikovi od úterý. U „hlavního linku" ještě řekneme, jestli si ho systém najde sám.</span>
+      </div>
+      <div class="todo-item">
+        <span class="t">Jeden účet pro monitoring</span>
+        <span class="s">Z NET-27 vyšlo něco cennějšího, než to vypadalo: stačí <b>jeden servisní účet</b> (nebo ten přes RADIUS) a monitoring uvidí i teploty, zatížení a stavy portů. Počítali jsme s tím, že to bude na dlouho — nebude.</span>
+      </div>
+      <div class="todo-item">
+        <span class="t">Stará data z monitoringu</span>
+        <span class="s">Půjde se na ně dívat vedle nových grafů, jak jsi chtěl, a po roce se smažou. <b>Ale musí se stáhnout ze starého serveru dřív, než ten stroj dosloužit</b> — pak už je nikdo nevrátí. Totéž platí pro staré PDF faktury.</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="bar">
+    <span class="prog" id="prog"><b>0</b>/14 vyplněno</span>
+    <span class="said" id="said" role="status" aria-live="polite"></span>
+    <button class="btn btn-quiet" id="reset" type="button">Vymazat</button>
+    <button class="btn" id="dl" type="button">Uložit jako soubor</button>
+    <button class="btn btn-primary" id="copy" type="button">Zkopírovat odpovědi</button>
+  </div>
+
+  <footer>newadmin &middot; 30. 7. 2026 &middot; navazuje na Část 1 — Telefonie a Část 2 — Monitoring sítě</footer>
+
+</div>
+
+<script>
+  (function () {
+    var KEY = "newadmin-petovi-2026-07-30";
+    var QS = [
+      { id: "Q1", t: "Kolik hovorů naráz ve špičce (příchozí + odchozí)" },
+      { id: "Q2", t: "„Ve službě“ = kalendář, nebo kdo se přihlásil" },
+      { id: "Q3", t: "Význam kódů SVA / SK / SK-poh / KOM" },
+      { id: "Q4", t: "Denní přehled — vidí čísla i technici" },
+      { id: "Q5", t: "VIP přímo na technika — kolik klientů, komu zvonit" },
+      { id: "Q6", t: "Příkon, pořizovací cena a životnost zařízení" },
+      { id: "Q7", t: "Čím se měří zbytková kapacita linky" },
+      { id: "Q8", t: "Jak se pozná, čí je provoz + radius_username" },
+      { id: "Q9", t: "Umělý hlas v ústředně" },
+      { id: "Q10", t: "IČO vs příznak firma (104 klientů v rozporu)" },
+      { id: "Q11", t: "Váhy klientů a kdo je smí měnit" },
+      { id: "Q12", t: "Znění hlášek v menu, SK a CZ" },
+      { id: "Q13", t: "Monitoring plánovaných odstávek od bývalého technika" },
+      { id: "Q14", t: "Ukázka zápisu Queue tree naživo" }
+    ];
+
+    function val(name) {
+      var r = document.querySelector('input[name="' + name + '"]:checked');
+      if (r) return r.value;
+      var t = document.querySelector('textarea[name="' + name + '"]');
+      return t && t.value ? t.value.trim() : "";
+    }
+    function extra(name) {
+      var t = document.querySelector('textarea[name="' + name + 'n"]');
+      return t && t.value ? t.value.trim() : "";
+    }
+    function answered(id) { return val(id) !== "" || extra(id) !== ""; }
+
+    function save() {
+      var data = {};
+      document.querySelectorAll('input[type="radio"]:checked').forEach(function (el) { data[el.name] = el.value; });
+      document.querySelectorAll("textarea").forEach(function (el) { if (el.value) data[el.name] = el.value; });
+      try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
+      progress();
+    }
+    function restore() {
+      var raw;
+      try { raw = localStorage.getItem(KEY); } catch (e) { return; }
+      if (!raw) return;
+      var data;
+      try { data = JSON.parse(raw); } catch (e) { return; }
+      Object.keys(data).forEach(function (k) {
+        var radio = document.querySelector('input[name="' + k + '"][value="' + String(data[k]).replace(/"/g, '\\"') + '"]');
+        if (radio) { radio.checked = true; return; }
+        var ta = document.querySelector('textarea[name="' + k + '"]');
+        if (ta) ta.value = data[k];
+      });
+    }
+    function progress() {
+      var done = QS.filter(function (q) { return answered(q.id); }).length;
+      document.getElementById("prog").innerHTML = "<b>" + done + "</b>/" + QS.length + " vyplněno";
+    }
+    function build() {
+      var out = [];
+      out.push("# Odpovědi Peťa — " + new Date().toLocaleString("cs-CZ"));
+      out.push("");
+      QS.forEach(function (q, i) {
+        var v = val(q.id), e = extra(q.id);
+        out.push("## " + (i + 1) + ". " + q.t);
+        out.push(v || "_nevyplněno_");
+        if (e) { out.push(""); out.push("Upřesnění: " + e); }
+        out.push("");
+      });
+      return out.join("\n");
+    }
+    function say(msg, bad) {
+      var el = document.getElementById("said");
+      el.textContent = msg;
+      el.className = bad ? "said bad" : "said";
+      setTimeout(function () { if (el.textContent === msg) el.textContent = ""; }, 6000);
+    }
+
+    document.getElementById("copy").addEventListener("click", function () {
+      var text = build();
+      function fallback() {
+        var ta = document.createElement("textarea");
+        ta.value = text; ta.setAttribute("readonly", "readonly");
+        ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select();
+        var ok = false;
+        try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+        document.body.removeChild(ta);
+        say(ok ? "Zkopírováno — pošli to Ladislavovi." : "Kopírování selhalo, zkus Uložit jako soubor.", !ok);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { say("Zkopírováno — pošli to Ladislavovi."); }, fallback);
+      } else { fallback(); }
+    });
+
+    var dlBtn = document.getElementById("dl");
+    if (!window.claude || !window.claude.downloads) {
+      dlBtn.style.display = "none";
+    } else {
+      dlBtn.addEventListener("click", function () {
+        window.claude.downloads.save({ filename: "odpovedi-peto.md", data: build() }).then(function () {
+          say("Uloženo jako odpovedi-peto.md");
+        }, function (err) {
+          var c = err && err.code;
+          if (c === "declined") { say("Uložení zrušeno.", true); return; }
+          if (c === "rate_limited") { say("Zkus to za chvíli.", true); return; }
+          dlBtn.style.display = "none";
+          say("Ukládání tady nejde — použij Zkopírovat.", true);
+        });
+      });
+    }
+
+    document.getElementById("reset").addEventListener("click", function () {
+      document.querySelectorAll('input[type="radio"]').forEach(function (el) { el.checked = false; });
+      document.querySelectorAll("textarea").forEach(function (el) { el.value = ""; });
+      try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+      progress(); say("Vymazáno.");
+    });
+
+    document.addEventListener("change", save);
+    document.addEventListener("input", function (e) {
+      if (e.target && e.target.tagName === "TEXTAREA") save();
+    });
+
+    restore();
+    progress();
+  })();
+</script>
+</body>
+</html>

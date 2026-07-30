@@ -291,6 +291,17 @@ figure.shot code{font-family:var(--mono);font-size:.86em}
 </div>
 
 <div class="flow" style="border-color:var(--accent)">
+  <h2 style="font-size:.78rem;font-family:var(--sans);letter-spacing:.1em;text-transform:uppercase;margin:0 0 .7rem;color:var(--accent)">Nové &middot; 30. 7. 2026</h2>
+  <p style="margin:0 0 .9rem;color:var(--ink-soft);font-size:.96rem"><b>Odpověděl jsi na obě části a my to prošli.</b>
+  U 33 věcí jsi potvrdil, co jsme plánovali. Třináct věcí jsme kvůli tobě změnili a
+  <b>tři se stavět nebudou vůbec</b> — zjistili jsme z tvojí odpovědi, že by neměly z čeho brát data.
+  Uvnitř najdeš, co přesně se změnilo, odpovědi na to, na co ses ptal, <b>opravená čísla</b>
+  (těch 3018 klientů byla naše chyba, měl jsi pravdu) a <b>14 nových otázek</b>, které jdou
+  vyplnit rovnou na stránce a poslat zpátky jedním tlačítkem.</p>
+  <p style="margin:0"><a class="protobtn" href="#" data-nav="part3">Otevřít odpovědi a nové otázky →</a></p>
+</div>
+
+<div class="flow" style="border-color:var(--accent)">
   <h2 style="font-size:.78rem;font-family:var(--sans);letter-spacing:.1em;text-transform:uppercase;margin:0 0 .7rem;color:var(--accent)">Chceš to nejdřív vidět?</h2>
   <p style="margin:0 0 .9rem;color:var(--ink-soft);font-size:.96rem">K některým rozhodnutím
   existují funkční ukázky — vyskakování karty při hovoru se dá <b>proklikat</b>, obrazovky
@@ -388,12 +399,13 @@ figure.shot code{font-family:var(--mono);font-size:.86em}
 <nav class="nav" style="margin-top:2.4rem">
   <a href="#" data-nav="part1">Část 1 — Telefonie →</a>
   <a href="#" data-nav="part2">Část 2 — Monitoring sítě →</a>
+  <a href="#" data-nav="part3">Odpovědi a nové otázky →</a>
 </nav>
 
 </div>
 
 <script>
-const LINKS = { part1:"cast-1.html", part2:"cast-2.html" };
+const LINKS = { part1:"cast-1.html", part2:"cast-2.html", part3:"odpovedi.html" };
 document.querySelectorAll("[data-nav]").forEach(a=>{
   const u = LINKS[a.dataset.nav];
   if(u) a.href = u; else { a.removeAttribute("href"); a.style.opacity=".5"; a.style.cursor="default"; }
